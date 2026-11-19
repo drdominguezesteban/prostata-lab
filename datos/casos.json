@@ -1,0 +1,661 @@
+[
+ {
+  "id": "10326_1000332",
+  "numero": 1,
+  "nivel": 2,
+  "contexto_real": {
+   "edad": 71,
+   "psa_ng_ml": 6.2,
+   "volumen_ml": 66,
+   "psad": 0.09,
+   "psad_calculada": false
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.09,
+  "categoria_estudio": 2,
+  "estrato_referencia": "biopsia_negativa",
+  "desenlace_real": "Se realizó biopsia sistemática: sin cáncer. Una biopsia negativa no descarta por completo un cáncer.",
+  "medicion": null,
+  "lesiones": [],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional a la zona más heterogénea"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "a"
+   ],
+   "aceptable": [],
+   "critico_si_elige": [
+    "b",
+    "c"
+   ],
+   "explicacion": "RM negativa (PI-RADS 2) con sospecha clínica baja (densidad de PSA de 0,09, tacto no sospechoso, sin antecedentes familiares): la EAU 2026 recomienda omitir la biopsia y ofrecer seguimiento con PSA, tras una decisión compartida (5.5.8, recomendación débil). El volumen glandular de 66 mL explica el PSA. No hay lesión a la que dirigir una biopsia, y la heterogeneidad de una hiperplasia no es un objetivo. Repetir la RM sin un cambio clínico no está justificado. Nota: a este paciente se le hizo una biopsia sistemática, que fue negativa.",
+   "via_preferente": "No procede, porque no hay indicación de biopsia."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 1400 y ADC; sin DCE).\nIndicación: PSA 6,2 ng/mL. Sin biopsias previas.\nVolumen prostático: 66 mL. Densidad de PSA: 0,09 ng/mL/mL.\nZona transicional: hiperplasia benigna nodular; difusión heterogénea sin foco de restricción marcada.\nZona periférica: sin lesiones focales sospechosas.\nExtensión extraprostática y vesículas seminales: sin alteraciones.\nConclusión: sin lesiones sospechosas. Categoría del estudio: PI-RADS 2.",
+  "errores_frecuentes": [
+   {
+    "si": "pirads=3",
+    "feedback": "La heterogeneidad de una zona transicional con hiperplasia, sin un foco circunscrito ni restricción marcada, no es PI-RADS 3. Buscar «algo» en una glándula grande genera falsos positivos."
+   },
+   {
+    "si": "decision=b",
+    "feedback": "Con PI-RADS 2 y densidad de PSA <0,20, sin antecedentes familiares, la guía recomienda omitir la biopsia y ofrecer seguimiento con PSA (EAU 2026, 5.5.8, recomendación débil). Una biopsia sistemática aquí aumenta el riesgo de complicaciones y de sobrediagnóstico."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 17,
+   "mm_por_px": 0.2,
+   "grosor_corte_mm": 3.6,
+   "b_alto": 1400,
+   "equipo": "Siemens Skyra"
+  }
+ },
+ {
+  "id": "10599_1000613",
+  "numero": 2,
+  "nivel": 2,
+  "contexto_real": {
+   "edad": 73,
+   "psa_ng_ml": 3.8,
+   "volumen_ml": 58,
+   "psad": 0.07,
+   "psad_calculada": false
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.07,
+  "categoria_estudio": 2,
+  "estrato_referencia": "sin_biopsia_seguimiento_no_documentado",
+  "desenlace_real": "No se biopsió; seguimiento clínico de duración no documentada en la base. No es un negativo confirmado por histología.",
+  "medicion": null,
+  "lesiones": [],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional a la alteración posterior"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "a"
+   ],
+   "aceptable": [],
+   "critico_si_elige": [
+    "b",
+    "c"
+   ],
+   "explicacion": "RM negativa (PI-RADS 2) con sospecha clínica baja (densidad de PSA de 0,07, tacto no sospechoso, sin antecedentes familiares): la EAU 2026 recomienda omitir la biopsia y ofrecer seguimiento con PSA, tras una decisión compartida (5.5.8, recomendación débil). Las alteraciones posteriores son lineales o difusas, sin un foco, y corresponden a DWI 2 en la zona periférica: no son un objetivo de biopsia.",
+   "via_preferente": "No procede, porque no hay indicación de biopsia."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 1400 y ADC; sin DCE).\nIndicación: PSA 3,8 ng/mL. Sin biopsias previas.\nVolumen prostático: 58 mL. Densidad de PSA: 0,07 ng/mL/mL.\nZona transicional: hiperplasia benigna nodular.\nZona periférica: alteraciones posteriores lineales o difusas, sin foco sospechoso.\nExtensión extraprostática y vesículas seminales: sin alteraciones.\nConclusión: sin lesiones sospechosas. Categoría del estudio: PI-RADS 2.",
+  "errores_frecuentes": [
+   {
+    "si": "pirads=3",
+    "feedback": "En la zona periférica, las alteraciones lineales, en cuña o difusas son DWI 2 (y T2 2). Para DWI 3 hace falta un foco diferenciado del fondo."
+   },
+   {
+    "si": "decision=c",
+    "feedback": "No hay una lesión focal a la que dirigir la biopsia. Una alteración lineal o difusa no es un objetivo."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 14,
+   "mm_por_px": 0.206,
+   "grosor_corte_mm": 3.6,
+   "b_alto": 1400,
+   "equipo": "Siemens Prisma_fit"
+  }
+ },
+ {
+  "id": "10807_1000823",
+  "numero": 3,
+  "nivel": 2,
+  "contexto_real": {
+   "edad": 77,
+   "psa_ng_ml": 8.8,
+   "volumen_ml": 53,
+   "psad": 0.17,
+   "psad_calculada": true
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.17,
+  "categoria_estudio": 5,
+  "estrato_referencia": "histologia_positiva",
+  "desenlace_real": "Biopsia sistemática: cáncer ISUP 2.",
+  "medicion": null,
+  "lesiones": [
+   {
+    "id": "L1",
+    "indice": true,
+    "sospechosa": true,
+    "zona": "PZ",
+    "sectores": [
+     "mid_PZ_pl_D",
+     "mid_PZ_pm_D",
+     "base_PZ_pl_D"
+    ],
+    "t2": 5,
+    "dwi": 5,
+    "dce": "no disponible",
+    "tamano": ">=1.5",
+    "epe": "no",
+    "pirads_global": 5,
+    "explicacion": "Lesión en la zona periférica derecha, posterolateral con extensión posteromedial, del tercio medio hacia la base. En DWI es focal, marcadamente hipointensa en ADC y marcadamente hiperintensa en b alto (b 2000), y mide ≥1,5 cm (la máscara mide unos 17 mm): DWI 5. En la zona periférica manda la DWI, así que es PI-RADS 5 (T2 5 lo confirma). Hay contacto capsular amplio sin extensión extraprostática definida en los cortes axiales: el contacto por sí solo no es extensión."
+   }
+  ],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia dirigida a la lesión + sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "c"
+   ],
+   "aceptable": [
+    "b"
+   ],
+   "critico_si_elige": [
+    "a",
+    "d"
+   ],
+   "explicacion": "RM positiva (PI-RADS 5): está indicada la biopsia. La EAU 2026 recomienda combinar la biopsia dirigida con muestreo perilesional cuando la RM es positiva (PI-RADS ≥4) (5.5.8, recomendación débil); añadir sistemática es aceptable, pero no es la opción preferente. A los 77 años, la indicación se individualiza según la esperanza de vida y la comorbilidad, pero esa valoración no cambia la lectura: no biopsiar por la RM o repetirla omite una lesión con muy alta probabilidad de cáncer clínicamente significativo.",
+   "via_preferente": "Transperineal: la EAU 2026 la recomienda por su menor riesgo infeccioso y un mejor uso de antibióticos (5.6.4, recomendación fuerte)."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 2000 y ADC; sin DCE).\nIndicación: PSA 8,8 ng/mL. Sin biopsias previas.\nVolumen prostático: 53 mL. Densidad de PSA: 0,17 ng/mL/mL.\nLesión 1 (índice): zona periférica posterolateral derecha con extensión posteromedial, tercio medio a base (mid_PZ_pl_D, mid_PZ_pm_D, base_PZ_pl_D). Tamaño ≥1,5 cm.\n- T2: hipointensidad extensa (5).\n- DWI: marcadamente hipointensa en ADC y marcadamente hiperintensa en b alto (5).\n- DCE: no disponible.\n- Categoría PI-RADS v2.1: 5.\nExtensión extraprostática: contacto capsular amplio, sin extensión definida. Vesículas seminales: sin alteraciones.\nConclusión: lesión PI-RADS 5 en la zona periférica derecha.",
+  "errores_frecuentes": [
+   {
+    "si": "pirads=4",
+    "feedback": "Con hallazgos de DWI 4 y un tamaño ≥1,5 cm, la DWI pasa a 5. Mide el eje mayor en el corte donde la lesión es más grande."
+   },
+   {
+    "si": "lado=I",
+    "feedback": "La lesión está en el lado derecho del paciente. En la convención radiológica, la derecha del paciente aparece a la izquierda de la pantalla."
+   },
+   {
+    "si": "epe=definida",
+    "feedback": "El contacto capsular amplio es un signo de riesgo, pero no es extensión extraprostática definida. Para considerarla definida hace falta ver extensión franca o invasión."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 16,
+   "mm_por_px": 0.226,
+   "grosor_corte_mm": 3.0,
+   "b_alto": 2000,
+   "equipo": "Philips Medical Systems Ingenia"
+  }
+ },
+ {
+  "id": "11377_1001400",
+  "numero": 4,
+  "nivel": 3,
+  "contexto_real": {
+   "edad": 70,
+   "psa_ng_ml": 10.8,
+   "volumen_ml": 38,
+   "psad": 0.28,
+   "psad_calculada": true
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.28,
+  "categoria_estudio": 3,
+  "estrato_referencia": "histologia_positiva",
+  "desenlace_real": "Biopsia dirigida: cáncer ISUP 2.",
+  "medicion": "Foco con restricción conjunta <15 mm: unos 10 mm en b alto (visual); 5 mm en la medición cuantitativa con umbrales relativos. Medición asistida por IA, adjudicada por el autor.",
+  "lesiones": [
+   {
+    "id": "L1",
+    "indice": true,
+    "sospechosa": true,
+    "zona": "TZ",
+    "sectores": [
+     "mid_TZ_a_I",
+     "base_TZ_a_I"
+    ],
+    "t2": 3,
+    "dwi": 4,
+    "dce": "no disponible",
+    "tamano": "<1.5",
+    "epe": "no",
+    "pirads_global": 3,
+    "explicacion": "Área anterior izquierda de la zona transicional, del tercio medio hacia la base, heterogénea y de márgenes borrosos en T2: T2 3. En b alto (b 1400) hay un foco pequeño marcadamente hiperintenso, de unos 10 mm, con ADC bajo: DWI 4. En la zona transicional manda T2: con T2 3, la categoría solo sube a 4 si la DWI es 5 (foco ≥1,5 cm), y aquí no llega. Resultado: PI-RADS 3. Si se puntúa DWI 3, la categoría también es 3."
+   }
+  ],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia dirigida a la lesión + sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "c"
+   ],
+   "aceptable": [
+    "b"
+   ],
+   "critico_si_elige": [
+    "a"
+   ],
+   "explicacion": "PI-RADS 3 (dudoso): la imagen no decide sola. La EAU 2026 solo contempla omitir la biopsia si la sospecha clínica es muy baja (densidad de PSA <0,10 y sin antecedentes familiares); en otro caso, recomienda considerar biopsia dirigida con muestreo perilesional (5.5.8, recomendación débil). Con PSA-D 0,28 (por encima de 0,10), la EAU recomienda considerar biopsia dirigida con muestreo perilesional (5.5.8, débil). Omitirla sin un motivo clínico explícito es el error más grave de este caso. Repetir la RM no aporta: el dato que decide ya está (la densidad de PSA). Mensaje docente: un PI-RADS 3 se decide con la clínica.",
+   "via_preferente": "Transperineal (EAU 2026, 5.6.4, recomendación fuerte). Además, facilita el acceso a lesiones anteriores como esta."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 1400 y ADC; sin DCE).\nIndicación: PSA 10,8 ng/mL. Sin biopsias previas.\nVolumen prostático: 38 mL. Densidad de PSA: 0,28 ng/mL/mL.\nLesión 1 (índice): zona transicional anterior izquierda, tercio medio a base (mid_TZ_a_I, base_TZ_a_I).\n- T2: señal heterogénea de márgenes borrosos (3).\n- DWI: foco de unos 10 mm, marcadamente hiperintenso en b alto, con ADC bajo (4).\n- DCE: no disponible.\n- Categoría PI-RADS v2.1: 3.\nExtensión extraprostática: no. Zona periférica: sin lesiones focales.\nConclusión: lesión dudosa (PI-RADS 3) en la zona transicional anterior izquierda; correlacionar con la densidad de PSA (0,28).",
+  "errores_frecuentes": [
+   {
+    "si": "pirads=4",
+    "feedback": "En la zona transicional manda T2. Con T2 3, la DWI solo sube la categoría a 4 si es 5 (foco ≥1,5 cm); con DWI 4 se queda en PI-RADS 3."
+   },
+   {
+    "si": "decision=a",
+    "feedback": "PI-RADS 3 con densidad de PSA de 0,28: la guía solo contempla omitir la biopsia si la densidad es <0,10 y no hay antecedentes familiares. Este paciente tenía un cáncer ISUP 2."
+   },
+   {
+    "si": "sin_lesion",
+    "feedback": "Hay un área anterior izquierda en la zona transicional con un foco en b alto. Las lesiones anteriores de la zona transicional se camuflan entre los nódulos de hiperplasia: compara el ADC y la imagen de b alto con el T2."
+   },
+   {
+    "si": "zona=PZ",
+    "feedback": "La lesión es anterior y está dentro de la cápsula quirúrgica, en la zona transicional. Allí manda T2, no la DWI."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 20,
+   "mm_por_px": 0.179,
+   "grosor_corte_mm": 3.0,
+   "b_alto": 1400,
+   "equipo": "Philips Medical Systems Achieva"
+  }
+ },
+ {
+  "id": "11137_1001160",
+  "numero": 5,
+  "nivel": 3,
+  "contexto_real": {
+   "edad": 70,
+   "psa_ng_ml": 10.0,
+   "volumen_ml": 91,
+   "psad": 0.11,
+   "psad_calculada": true
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.11,
+  "categoria_estudio": 4,
+  "estrato_referencia": "histologia_positiva",
+  "desenlace_real": "Biopsia dirigida: cáncer ISUP 2.",
+  "medicion": null,
+  "lesiones": [
+   {
+    "id": "L1",
+    "indice": true,
+    "sospechosa": true,
+    "zona": "PZ",
+    "sectores": [
+     "apex_PZ_pl_D"
+    ],
+    "t2": 3,
+    "dwi": 4,
+    "dce": "no disponible",
+    "tamano": "<1.5",
+    "epe": "no",
+    "pirads_global": 4,
+    "explicacion": "Foco pequeño (unos 9 mm) en la zona periférica lateral derecha, cerca de la transición entre el ápex y el tercio medio. En T2 la alteración es poco definida (3), pero en DWI el foco es marcadamente hipointenso en ADC y marcadamente hiperintenso en b alto (b 1500): DWI 4. En la zona periférica manda la DWI, así que es PI-RADS 4. Es un caso de dificultad avanzada por el tamaño y por estar en el borde lateral de la glándula: hay que recorrer corte a corte el ADC y la imagen de b alto, no solo el T2."
+   }
+  ],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia dirigida a la lesión + sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "c"
+   ],
+   "aceptable": [
+    "b"
+   ],
+   "critico_si_elige": [
+    "a",
+    "d"
+   ],
+   "explicacion": "RM positiva (PI-RADS 4) con densidad de PSA de 0,11: está indicada la biopsia dirigida con muestreo perilesional (EAU 2026, 5.5.8, recomendación débil); añadir sistemática es aceptable, pero no preferente. La próstata grande (91 mL) explica parte del PSA, pero no anula una lesión PI-RADS 4: la densidad de PSA ayuda a decidir en PI-RADS 3, no en ≥4. Omitir la biopsia es un error crítico.",
+   "via_preferente": "Transperineal (EAU 2026, 5.6.4, recomendación fuerte). Además, facilita el acceso a lesiones apicales y laterales como esta."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 1500 y ADC; sin DCE).\nIndicación: PSA 10,0 ng/mL. Sin biopsias previas.\nVolumen prostático: 91 mL. Densidad de PSA: 0,11 ng/mL/mL.\nLesión 1 (índice): zona periférica posterolateral derecha, ápex (apex_PZ_pl_D), unos 9 mm.\n- T2: alteración poco definida (3).\n- DWI: foco marcadamente hipointenso en ADC y marcadamente hiperintenso en b alto (4).\n- DCE: no disponible.\n- Categoría PI-RADS v2.1: 4.\nExtensión extraprostática: no. Zona transicional: hiperplasia benigna.\nConclusión: lesión PI-RADS 4 en la zona periférica derecha del ápex.",
+  "errores_frecuentes": [
+   {
+    "si": "sin_lesion",
+    "feedback": "Hay un foco pequeño en la zona periférica lateral derecha, cerca del ápex. Las lesiones pequeñas y laterales se escapan si solo se mira el T2: recorre el ADC y la imagen de b alto corte a corte."
+   },
+   {
+    "si": "pirads=3",
+    "feedback": "En la zona periférica manda la DWI. Este foco es marcadamente hipointenso en ADC y marcadamente hiperintenso en b alto a la vez: DWI 4 y PI-RADS 4, aunque el T2 sea poco expresivo."
+   },
+   {
+    "si": "pirads=5",
+    "feedback": "El foco mide menos de 1,5 cm y no hay extensión extraprostática: DWI 4, no 5."
+   },
+   {
+    "si": "decision=a",
+    "feedback": "La densidad de PSA baja por una próstata grande no justifica omitir la biopsia con una RM PI-RADS 4."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 24,
+   "mm_por_px": 0.249,
+   "grosor_corte_mm": 3.0,
+   "b_alto": 1500,
+   "equipo": "Philips Medical Systems Achieva"
+  }
+ },
+ {
+  "id": "11032_1001052",
+  "numero": 6,
+  "nivel": 3,
+  "contexto_real": {
+   "edad": 73,
+   "psa_ng_ml": 24.0,
+   "volumen_ml": 62,
+   "psad": 0.39,
+   "psad_calculada": true
+  },
+  "contexto_docente": {
+   "tacto_rectal": "no sospechoso",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.39,
+  "categoria_estudio": 5,
+  "estrato_referencia": "histologia_positiva",
+  "desenlace_real": "Biopsia dirigida: cáncer ISUP 2.",
+  "medicion": "Área de T2 homogénea e hipointensa de unos 25 mm (visual); la máscara de cáncer mide 29,8 mm. Restricción moderada, no marcada (ADC 0,65 × y b alto 1,45 × respecto a la zona transicional sana). Medición asistida por IA, adjudicada por el autor. Discrepancia con el informe original (PI-RADS 4) por aplicar el criterio de tamaño.",
+  "lesiones": [
+   {
+    "id": "L1",
+    "indice": true,
+    "sospechosa": true,
+    "zona": "TZ",
+    "sectores": [
+     "base_TZ_a_D",
+     "base_TZ_a_I"
+    ],
+    "t2": 5,
+    "dwi": 3,
+    "dce": "no disponible",
+    "tamano": ">=1.5",
+    "epe": "no",
+    "pirads_global": 5,
+    "explicacion": "Área anterior de la zona transicional, predominantemente basal, que cruza la línea media. Es homogénea, moderadamente hipointensa en T2, de márgenes mal definidos y sin cápsula nodular (patrón de «carboncillo borrado») y mide unos 25 mm. Sería T2 4, pero al tener ≥1,5 cm es T2 5. En la zona transicional manda T2: PI-RADS 5, aunque la DWI sea solo 3 (restricción moderada, no marcada). El informe original la clasificó como PI-RADS 4: la diferencia está en aplicar el criterio de tamaño."
+   }
+  ],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia dirigida a la lesión + sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional"
+    },
+    {
+     "id": "d",
+     "texto": "Repetir la RM en 6 meses"
+    }
+   ],
+   "correcta": [
+    "c"
+   ],
+   "aceptable": [
+    "b"
+   ],
+   "critico_si_elige": [
+    "a",
+    "d"
+   ],
+   "explicacion": "RM positiva (PI-RADS 5; también lo sería con PI-RADS 4) con densidad de PSA de 0,39: biopsia dirigida con muestreo perilesional (EAU 2026, 5.5.8, recomendación débil); añadir sistemática es aceptable, pero no preferente. Atribuir el PSA solo a la hiperplasia, con una próstata de 62 mL, es el sesgo que este caso quiere desmontar.",
+   "via_preferente": "Transperineal (EAU 2026, 5.6.4, recomendación fuerte). Además, facilita el acceso a lesiones anteriores."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 1400 y ADC; sin DCE).\nIndicación: PSA 24 ng/mL. Sin biopsias previas.\nVolumen prostático: 62 mL. Densidad de PSA: 0,39 ng/mL/mL.\nLesión 1 (índice): zona transicional anterior, base, bilateral (base_TZ_a_D, base_TZ_a_I), unos 25 mm.\n- T2: área homogénea, moderadamente hipointensa, de márgenes mal definidos y sin cápsula (5 por tamaño ≥1,5 cm).\n- DWI: restricción moderada, no marcada (3).\n- DCE: no disponible.\n- Categoría PI-RADS v2.1: 5.\nExtensión extraprostática: no definida; contacto con el estroma fibromuscular anterior.\nConclusión: lesión PI-RADS 5 en la zona transicional anterior basal.",
+  "errores_frecuentes": [
+   {
+    "si": "pirads=4",
+    "feedback": "El patrón en T2 (lenticular o mal definido, homogéneo, moderadamente hipointenso) sería T2 4, pero mide ≥1,5 cm: T2 5 y PI-RADS 5. El tamaño es un criterio, no un detalle."
+   },
+   {
+    "si": "pirads=3",
+    "feedback": "En la zona transicional manda T2, no la DWI. Una DWI moderada no baja la categoría si el T2 es 4 o 5."
+   },
+   {
+    "si": "sin_lesion",
+    "feedback": "Las lesiones anteriores de la zona transicional se confunden con la hiperplasia. Busca un área homogénea, de márgenes mal definidos y sin cápsula: es el patrón de «carboncillo borrado»."
+   },
+   {
+    "si": "decision=a",
+    "feedback": "Con PI-RADS ≥4 y densidad de PSA de 0,39 está indicada la biopsia. Una próstata grande no explica una densidad de PSA tan alta."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 20,
+   "mm_por_px": 0.217,
+   "grosor_corte_mm": 3.3,
+   "b_alto": 1400,
+   "equipo": "Siemens Skyra"
+  }
+ },
+ {
+  "id": "11260_1001283",
+  "numero": 7,
+  "nivel": 3,
+  "contexto_real": {
+   "edad": 67,
+   "psa_ng_ml": 23.0,
+   "volumen_ml": 26,
+   "psad": 0.88,
+   "psad_calculada": true
+  },
+  "contexto_docente": {
+   "tacto_rectal": "induración en el lóbulo derecho",
+   "antecedentes_familiares": "no",
+   "inhibidor_5ari": false,
+   "biopsias_previas": "ninguna"
+  },
+  "aviso_contexto": "Tacto rectal, antecedentes, biopsias previas y medicación completados con fines docentes; no proceden del paciente original.",
+  "densidad_psa_correcta": 0.88,
+  "categoria_estudio": 5,
+  "estrato_referencia": "histologia_positiva",
+  "desenlace_real": "Biopsia dirigida: cáncer ISUP 2 en ambas lesiones.",
+  "medicion": null,
+  "lesiones": [
+   {
+    "id": "L1",
+    "indice": true,
+    "sospechosa": true,
+    "zona": "PZ",
+    "sectores": [
+     "mid_PZ_pl_D",
+     "mid_PZ_a_D",
+     "base_PZ_pl_D"
+    ],
+    "t2": 5,
+    "dwi": 5,
+    "dce": "no disponible",
+    "tamano": ">=1.5",
+    "epe": "no",
+    "pirads_global": 5,
+    "explicacion": "Lesión amplia (unos 23 mm) en la zona periférica derecha, lateral con extensión anterior, del tercio medio a la base. Es marcadamente hipointensa en ADC y marcadamente hiperintensa en b alto (b 2000) y mide ≥1,5 cm: DWI 5 y PI-RADS 5. Es la lesión índice. Hay contacto capsular amplio sin extensión definida en los cortes axiales."
+   },
+   {
+    "id": "L2",
+    "indice": false,
+    "sospechosa": true,
+    "zona": "PZ",
+    "sectores": [
+     "apex_PZ_pm_I",
+     "mid_PZ_pm_I"
+    ],
+    "t2": 3,
+    "dwi": 4,
+    "dce": "no disponible",
+    "tamano": "<1.5",
+    "epe": "no",
+    "pirads_global": 4,
+    "explicacion": "Segundo foco (unos 11 mm) en la zona periférica posteromedial izquierda, cerca de la línea media, entre el ápex y el tercio medio. Restricción marcada en ADC e hiperseñal marcada en b alto, con menos de 1,5 cm: DWI 4 y PI-RADS 4. Es un foco independiente de L1: hay que describirlo y biopsiarlo por separado."
+   }
+  ],
+  "decision": {
+   "opciones": [
+    {
+     "id": "a",
+     "texto": "No biopsia; seguimiento con PSA y decisión compartida"
+    },
+    {
+     "id": "b",
+     "texto": "Biopsia dirigida a todas las lesiones sospechosas + sistemática"
+    },
+    {
+     "id": "c",
+     "texto": "Biopsia dirigida + perilesional de todas las lesiones sospechosas"
+    },
+    {
+     "id": "d",
+     "texto": "Biopsia dirigida + perilesional solo de la lesión mayor"
+    }
+   ],
+   "correcta": [
+    "c"
+   ],
+   "aceptable": [
+    "b"
+   ],
+   "critico_si_elige": [
+    "a"
+   ],
+   "explicacion": "RM positiva con dos lesiones (PI-RADS 5 y 4), densidad de PSA de 0,88 y tacto sospechoso: biopsia dirigida con muestreo perilesional de cada lesión (EAU 2026, 5.5.8, recomendación débil); añadir sistemática es aceptable, pero no preferente. Biopsiar solo la lesión mayor (d) deja sin caracterizar un foco PI-RADS 4 contralateral, que cambia la planificación del tratamiento (lateralidad, preservación de bandeletas, tratamiento focal). Es incorrecto, aunque no crítico.",
+   "via_preferente": "Transperineal (EAU 2026, 5.6.4, recomendación fuerte)."
+  },
+  "informe_referencia": "RM biparamétrica de próstata (T2, DWI con b 2000 y ADC; sin DCE).\nIndicación: PSA 23 ng/mL; tacto con induración derecha. Sin biopsias previas.\nVolumen prostático: 26 mL. Densidad de PSA: 0,88 ng/mL/mL.\nLesión 1 (índice): zona periférica derecha, lateral con extensión anterior, tercio medio a base (mid_PZ_pl_D, mid_PZ_a_D, base_PZ_pl_D). Tamaño ≥1,5 cm. T2 5, DWI 5. PI-RADS 5.\nLesión 2: zona periférica posteromedial izquierda, ápex a tercio medio (apex_PZ_pm_I, mid_PZ_pm_I), unos 11 mm. T2 3, DWI 4. PI-RADS 4.\nDCE: no disponible.\nExtensión extraprostática: contacto capsular amplio en L1, sin extensión definida. Vesículas seminales: sin alteraciones.\nConclusión: dos lesiones sospechosas en la zona periférica (PI-RADS 5 derecha y PI-RADS 4 izquierda).",
+  "errores_frecuentes": [
+   {
+    "si": "lesiones=1",
+    "feedback": "Hay un segundo foco en la zona periférica posteromedial izquierda, cerca del ápex. Tras encontrar la lesión principal, sigue revisando la glándula entera: es el error de «satisfacción de búsqueda»."
+   },
+   {
+    "si": "pirads=4",
+    "feedback": "En la lesión derecha, la restricción marcada en ADC y en b alto con un tamaño ≥1,5 cm es DWI 5, así que la categoría es PI-RADS 5."
+   },
+   {
+    "si": "decision=d",
+    "feedback": "Las dos lesiones son sospechosas (PI-RADS 5 y 4) y están en lados distintos: hay que biopsiar ambas, porque cambia la planificación del tratamiento."
+   }
+  ],
+  "tecnica": {
+   "n_cortes": 16,
+   "mm_por_px": 0.172,
+   "grosor_corte_mm": 3.0,
+   "b_alto": 2000,
+   "equipo": "Philips Medical Systems Ingenia"
+  }
+ }
+]

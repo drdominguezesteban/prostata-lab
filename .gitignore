@@ -1,0 +1,29 @@
+# Común (15 nov 2026, Ingeniero de Sistemas): secretos, dependencias, builds y basura
+.env
+.env.*
+*.env
+.dev.vars
+*.pem
+*.key
+.wrangler/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+*.log
+*.pid
+*.bak
+*.bak-*
+*.bak*
+_backup-*/
+backup-*/
+backup_*/
+prod-snapshot-*/
+.DS_Store
+# Vídeos: fuera del repo (se despliegan desde el box)
+*.mp4
+*.mov
+*.webm
+*.m4v
+# Próstata Lab
+deploy*.log
