@@ -168,6 +168,14 @@ input[type="radio"], input[type="checkbox"] { width: 1.15rem; height: 1.15rem; a
 .visor-aviso:empty { display: none; }
 .visor.marcando { box-shadow: 0 0 0 3px #facc15; }
 .visor-nota { margin-top: 0.5rem; }
+/* Móvil: una secuencia a todo el ancho, con pestañas (solo existen con .visor-movil; ver CONSULTA_MOVIL en src/pestanas.ts). */
+.visor-pestanas { display: flex; gap: 0.3rem; margin-bottom: 0.4rem; }
+.visor-pestanas [role="tab"] { flex: 1 1 0; min-height: 44px; padding: 0.3rem 0.5rem; border: 1px solid #3b4a44; border-radius: 8px; background: #1b2420; color: #e5e7eb; font: inherit; font-weight: 600; cursor: pointer; }
+.visor-pestanas [role="tab"][aria-selected="true"] { background: #e5e7eb; color: #111; border-color: #e5e7eb; }
+.visor-pestanas [role="tab"]:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; }
+.visor-panel[hidden] { display: none; }
+.visor-paneles[role="tabpanel"]:focus-visible { outline: 3px solid #facc15; outline-offset: 2px; border-radius: 6px; }
+.visor-3.visor-movil .visor-paneles { grid-template-columns: minmax(0, 1fr); }
 .interruptor { display: inline-flex; gap: 0.4rem; align-items: center; margin-top: 0.5rem; font-size: 0.95rem; }
 .respuesta-clic { background: var(--pino-claro); border-radius: 8px; padding: 0.7rem 0.9rem; font-weight: 600; }
 
