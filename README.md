@@ -8,6 +8,8 @@ Aprende a leer la RM biparamétrica de próstata (PI-RADS v2.1) con estudios rea
 
 El progreso queda en el navegador y se puede exportar para el panel docente. No es un sistema de apoyo a decisiones clínicas.
 
+Dirección pública: https://prostatalab.drdominguezesteban.com (alternativa: https://prostata-lab.pages.dev).
+
 ## Desarrollo
 
 ```sh

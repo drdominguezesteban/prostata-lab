@@ -25,9 +25,16 @@ npx wrangler pages deploy     # desde la raíz: sube dist/ y functions/ (lo indi
 
 Hay que lanzarlo desde la raíz del repo: así Pages incluye `functions/`, que es donde se corrige. Si se sube solo `dist/`, la web carga pero no corrige.
 
+## Dirección pública
+
+- Dirección pública: `https://prostatalab.drdominguezesteban.com`. Es un dominio personalizado del proyecto de Pages `prostata-lab` (pestaña «Custom domains»), con un CNAME `prostatalab` → `prostata-lab.pages.dev` con proxy en la zona `drdominguezesteban.com`.
+- Alternativa: `https://prostata-lab.pages.dev`, que sigue funcionando.
+- Publicar no cambia el dominio: `wrangler pages deploy` actualiza las dos direcciones a la vez.
+- No se toca ningún otro registro DNS de la zona ni la configuración de SSL, caché, reglas o WAF: la web principal (`drdominguezesteban.com` y `www`) es otro proyecto.
+
 ## Comprobar tras publicar
 
-Con `URL` = la dirección que da wrangler (por ejemplo `https://prostata-lab.pages.dev`):
+Con `URL` = la dirección pública, `https://prostatalab.drdominguezesteban.com` (alternativa: `https://prostata-lab.pages.dev`, la que da wrangler):
 
 ```sh
 curl -s "$URL/api/casos" | head -c 200                       # lista de casos, sin respuestas
