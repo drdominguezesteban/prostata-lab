@@ -5,8 +5,14 @@
  *
  * La rueda solo cambia de corte con el visor enfocado (tras hacer clic) o con Mayúsculas; sin
  * foco, la página se desplaza con normalidad.
+ *
+ * En el móvil (menos de 600 px de ancho) se ve una sola secuencia a todo el ancho, con pestañas.
+ * Las tres siguen dibujándose con el mismo estado (corte, zoom, desplazamiento, marcas, brillo y
+ * contraste), así que cambiar de pestaña o girar el móvil no pierde nada. En escritorio el DOM es
+ * el de siempre: la lista de pestañas y los atributos de panel solo existen en modo móvil.
  */
 import { h, vaciar } from "./dom";
+import { CONSULTA_MOVIL, pestanaSegunTecla } from "./pestanas";
 
 export type Secuencia = "t2w" | "adc" | "hbv";
 export const NOMBRE_SECUENCIA: Record<Secuencia, string> = { t2w: "T2", adc: "ADC", hbv: "b alto" };
@@ -38,6 +44,7 @@ export interface OpcionesVisor {
 }
 
 const N = 384;
+let contadorVisores = 0;
 const imagenes = new Map<string, HTMLImageElement>();
 
 function urlImagen(caso: string, seq: Secuencia, k: number): string {
@@ -73,6 +80,13 @@ export class Visor {
   private modoMarca = false;
   private aviso: HTMLElement;
   private precargado = false;
+  private paneles: HTMLElement[] = [];
+  private pestanas: HTMLButtonElement[] = [];
+  private listaPestanas: HTMLElement | null = null;
+  private activa = 0;
+  private movil = false;
+  private conectado = false;
+  private readonly uid = `visor-${++contadorVisores}`;
 
   constructor(o: OpcionesVisor) {
     this.o = o;
@@ -89,7 +103,7 @@ export class Visor {
     this.rotuloCorte = h("span", { class: "visor-corte", "aria-live": "polite" });
     this.aviso = h("p", { class: "visor-aviso" });
 
-    const paneles = o.secuencias.map((seq) => {
+    const paneles = (this.paneles = o.secuencias.map((seq) => {
       const c = h("canvas", { width: N, height: N, "aria-label": `${NOMBRE_SECUENCIA[seq]}, corte axial` });
       this.lienzos.set(seq, c);
       this.eventosLienzo(c);
@@ -99,7 +113,26 @@ export class Visor {
         c,
         h("figcaption", null, h("strong", null, NOMBRE_SECUENCIA[seq]), o.rotulos?.[seq] ? ` · ${o.rotulos[seq]}` : ""),
       );
-    });
+    }));
+
+    if (o.secuencias.length > 1) {
+      this.pestanas = o.secuencias.map((seq, i) =>
+        h("button", {
+          type: "button",
+          role: "tab",
+          id: `${this.uid}-pestana-${seq}`,
+          // Un solo panel (el contenedor de las figuras), que muestra la secuencia de la pestaña activa.
+          "aria-controls": `${this.uid}-panel`,
+          onclick: () => this.activar(i, false),
+        }, NOMBRE_SECUENCIA[seq]) as HTMLButtonElement);
+      this.listaPestanas = h("div", { class: "visor-pestanas", role: "tablist", "aria-label": "Secuencia" }, this.pestanas);
+      this.listaPestanas.addEventListener("keydown", (e) => {
+        const k = pestanaSegunTecla(this.activa, e.key, this.pestanas.length);
+        if (k === null) return;
+        e.preventDefault();
+        this.activar(k, true);
+      });
+    }
 
     const brillo = h("input", { type: "range", min: 0.5, max: 1.8, step: 0.05, value: 1, "aria-label": "Brillo", oninput: (e: Event) => { this.brillo = Number((e.target as HTMLInputElement).value); this.dibujar(); } });
     const contraste = h("input", { type: "range", min: 0.5, max: 2.5, step: 0.05, value: 1, "aria-label": "Contraste", oninput: (e: Event) => { this.contraste = Number((e.target as HTMLInputElement).value); this.dibujar(); } });
@@ -136,6 +169,8 @@ export class Visor {
 
     this.el.addEventListener("keydown", (e) => {
       if ((e.target as HTMLElement).tagName === "INPUT" || (e.target as HTMLElement).tagName === "SELECT") return;
+      // En las pestañas, las flechas cambian de secuencia, no de corte.
+      if (this.listaPestanas?.contains(e.target as Node)) return;
       if (e.key === "ArrowUp" || e.key === "ArrowRight" || e.key === "PageUp") { e.preventDefault(); this.irA(this.corte + 1); }
       if (e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "PageDown") { e.preventDefault(); this.irA(this.corte - 1); }
     });
@@ -149,6 +184,52 @@ export class Visor {
 
     this.actualizarRotulo();
     this.dibujar();
+
+    if (this.listaPestanas && typeof window !== "undefined" && window.matchMedia) {
+      const consulta = window.matchMedia(CONSULTA_MOVIL);
+      const alCambiar = () => {
+        // Un visor que ya no está en la página (se cambió de vista) deja de escuchar.
+        if (this.el.isConnected) this.conectado = true;
+        else if (this.conectado) return consulta.removeEventListener("change", alCambiar);
+        this.ponerModoMovil(consulta.matches);
+      };
+      consulta.addEventListener("change", alCambiar);
+      this.ponerModoMovil(consulta.matches);
+    }
+  }
+
+  /** Cambia de pestaña. Corte, zoom, desplazamiento y marcas son del visor, no del panel: no cambian. */
+  private activar(i: number, enfocar: boolean): void {
+    this.activa = i;
+    if (this.movil) this.pintarPestanas();
+    if (enfocar) this.pestanas[i]?.focus();
+  }
+
+  private ponerModoMovil(movil: boolean): void {
+    if (!this.listaPestanas) return;
+    this.movil = movil;
+    this.el.classList.toggle("visor-movil", movil);
+    const contenedor = this.paneles[0]!.parentElement!;
+    if (movil && !this.listaPestanas.isConnected) contenedor.before(this.listaPestanas);
+    if (!movil) this.listaPestanas.remove();
+    // <figure> no admite role="tabpanel": el panel es el contenedor de las figuras (en escritorio, sin atributos).
+    for (const [k, v] of Object.entries({ id: `${this.uid}-panel`, role: "tabpanel", tabindex: "0" })) {
+      if (movil) contenedor.setAttribute(k, v);
+      else contenedor.removeAttribute(k);
+    }
+    if (!movil) {
+      contenedor.removeAttribute("aria-labelledby");
+      this.paneles.forEach((p) => (p.hidden = false));
+    } else this.pintarPestanas();
+  }
+
+  private pintarPestanas(): void {
+    this.pestanas.forEach((t, i) => {
+      t.setAttribute("aria-selected", String(i === this.activa));
+      t.tabIndex = i === this.activa ? 0 : -1;
+    });
+    this.paneles.forEach((p, i) => (p.hidden = i !== this.activa));
+    this.paneles[0]!.parentElement!.setAttribute("aria-labelledby", this.pestanas[this.activa]!.id);
   }
 
   private eventosLienzo(c: HTMLCanvasElement): void {
