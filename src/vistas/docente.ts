@@ -69,7 +69,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
     h("h1", null, "Panel docente"),
     h("p", { class: "entradilla" },
       "Cada alumno exporta su progreso desde «Mis resultados» y te envía el archivo. Aquí los reúnes para ver el grupo. ",
-      "Los datos se quedan en este navegador: no se suben a ningún servidor."),
+      "Los datos se quedan en este navegador. Para comprobar las notas, cada lectura se corrige de nuevo en el servidor sin el seudónimo, y no se guarda allí."),
     h("p", { class: "nota" }, "Los archivos solo llevan un seudónimo. Si alguno trae un nombre real, pide al alumno que lo cambie y vuelva a exportar."),
     zona,
     entrada,

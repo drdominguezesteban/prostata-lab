@@ -12,7 +12,7 @@ PI-CAI. Proyecto personal de Mario, en `*.pages.dev`. Sustituye a la versión de
   devuelve solo notas. Una prueba falla si una clave de respuesta aparece en el catálogo y otra si
   `src/` importa valores de `shared/servidor` o de `datos/`. Publicación: `docs/PUBLICAR.md`.
 - Progreso del alumno en `localStorage`, con exportación/importación JSON. El panel docente reúne
-  esos archivos en su propio `localStorage`. Solo seudónimos; nada se sube a ningún servidor.
+  esos archivos en su propio `localStorage`. Solo seudónimos; al servidor solo llegan lecturas, sin seudónimo, y no se guardan.
 - Datos e imágenes se regeneran con `scripts/importar_casos.py` desde `~/Dev/simulador-rm-prostata/export`
   y `~/Dev/prostata-lab-picai/out` (contornos zonales: `prostata-lab-picai/scripts/generar_zonal.py`).
 - `npm run dev` (127.0.0.1:43124) sirve la misma API con el middleware de `vite.config.ts`.
