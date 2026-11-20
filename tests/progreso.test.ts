@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import casosJson from "../datos/casos.json";
 import { corregir } from "../shared/puntuacion";
-import { anadirAlGrupo, csvGrupo, exportar, fusionarIntentos, grupoVacio, intentoDesde, leerExportacion, mejoraEnRepetidos, progresoVacio, resumenPorCaso, resumir, seudonimoValido } from "../shared/progreso";
+import { anadirAlGrupo, csvGrupo, exportar, fusionarIntentos, grupoVacio, intentoDesde, leerExportacion, mejoraEnRepetidos, progresoVacio, resumenPorCaso, resumir, sanearGrupo, sanearProgreso, seudonimoValido } from "../shared/progreso";
 import { corregirPeticion, catalogo, limpiarLectura } from "../shared/servidor";
 import type { Caso, Lectura } from "../shared/tipos";
 
@@ -78,4 +78,21 @@ test("la corrección en el servidor limpia la entrada", () => {
   const r = corregirPeticion({ caso: c.id, lectura: vacia });
   assert.equal(r.estado, 200);
   assert.ok(r.json.ok && r.json.referencia.informe.length > 0 && !/mid_PZ/.test(r.json.referencia.informe));
+});
+
+test("un intento dañado se rechaza al importar y se descarta al leer del almacén", () => {
+  const p = progresoVacio();
+  const bueno = intentoDesde("c1", { psad: null, lesiones: [], categoria: 2, decision: "a", impresion: "" },
+    { nota: 80, critico: false, perfecto: false, componentes: [] } as never, 60);
+  const malos = [{ ...bueno, id: "x", componentes: null }, { ...bueno, id: "y", lectura: {} }, { ...bueno, id: "z", fin: "nunca" }];
+  for (const m of malos) {
+    assert.equal(leerExportacion(exportar({ ...p, intentos: [m as never] })).ok, false);
+  }
+  const saneado = sanearProgreso({ version: 1, seudonimo: "Ana", intentos: [bueno, ...malos] });
+  assert.equal(saneado.intentos.length, 1);
+  assert.doesNotThrow(() => resumir(saneado.intentos));
+  assert.deepEqual(sanearProgreso(null), progresoVacio());
+  const g = sanearGrupo({ version: 1, alumnos: { Ana: { importado: "", intentos: [bueno, ...malos] }, Luis: null } });
+  assert.deepEqual(Object.keys(g.alumnos), ["Ana"]);
+  assert.equal(g.alumnos.Ana!.intentos.length, 1);
 });

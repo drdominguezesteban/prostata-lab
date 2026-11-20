@@ -212,7 +212,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     : null;
 
   const pirads = cercania(lectura.categoria, caso.categoria_estudio);
-  const psad = lectura.psad !== null && Math.abs(lectura.psad - caso.densidad_psa_correcta) <= TOLERANCIA_PSAD ? 1 : 0;
+  const psad = lectura.psad !== null && Math.abs(lectura.psad - caso.densidad_psa_correcta) <= TOLERANCIA_PSAD + 1e-9 ? 1 : 0;
 
   const d = caso.decision;
   const elegida = lectura.decision;

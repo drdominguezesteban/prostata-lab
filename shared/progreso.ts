@@ -62,19 +62,43 @@ export function exportar(p: Progreso, ahora = new Date()): string {
   return JSON.stringify(e, null, 1);
 }
 
-function esIntento(x: unknown): x is Intento {
-  const i = x as Intento;
+const finito = (n: unknown): n is number => typeof n === "number" && Number.isFinite(n);
+const esObjeto = (o: unknown): o is Record<string, unknown> => !!o && typeof o === "object" && !Array.isArray(o);
+
+/** Valida a fondo: un intento dañado en un archivo o en el almacén no debe romper ninguna vista. */
+export function esIntento(x: unknown): x is Intento {
+  if (!esObjeto(x)) return false;
+  const i = x as unknown as Intento;
   return (
-    !!i &&
     typeof i.id === "string" &&
     typeof i.caso === "string" &&
     typeof i.fin === "string" &&
-    typeof i.segundos === "number" &&
-    typeof i.nota === "number" &&
+    !Number.isNaN(Date.parse(i.fin)) &&
+    finito(i.segundos) &&
+    finito(i.nota) &&
     typeof i.critico === "boolean" &&
-    !!i.lectura &&
-    typeof i.componentes === "object"
+    esObjeto(i.lectura) &&
+    Array.isArray(i.lectura.lesiones) &&
+    i.lectura.lesiones.every((l) => esObjeto(l) && Array.isArray(l.sectores)) &&
+    esObjeto(i.componentes) &&
+    Object.values(i.componentes).every((v) => v === null || finito(v))
   );
+}
+
+/** Lo leído del almacén: se descartan los intentos dañados en vez de fallar. */
+export function sanearProgreso(x: unknown): Progreso {
+  if (!esObjeto(x) || !Array.isArray(x.intentos)) return progresoVacio();
+  return { version: 1, seudonimo: typeof x.seudonimo === "string" ? x.seudonimo : "", intentos: x.intentos.filter(esIntento) };
+}
+
+export function sanearGrupo(x: unknown): Grupo {
+  const g = grupoVacio();
+  if (!esObjeto(x) || !esObjeto(x.alumnos)) return g;
+  for (const [s, a] of Object.entries(x.alumnos)) {
+    if (!esObjeto(a) || !Array.isArray(a.intentos)) continue;
+    g.alumnos[s] = { importado: typeof a.importado === "string" ? a.importado : "", intentos: a.intentos.filter(esIntento) };
+  }
+  return g;
 }
 
 export function leerExportacion(textoJson: string): { ok: true; datos: Exportacion } | { ok: false; mensaje: string } {

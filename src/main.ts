@@ -37,6 +37,11 @@ const MENU: Array<[string, string]> = [
 const app = document.getElementById("app")!;
 const contenido = h("main", { id: "contenido", tabindex: -1 });
 const navegacion = h("nav", { "aria-label": "Secciones" });
+// El router usa el hash: el enlace «Saltar al contenido» no debe cambiarlo.
+document.querySelector("a.saltar")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  contenido.focus();
+});
 app.append(
   h(
     "header",

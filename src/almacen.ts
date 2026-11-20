@@ -1,5 +1,5 @@
 /** Todo lo que se guarda vive en este navegador (localStorage). Nada se envía a ningún servidor. */
-import { grupoVacio, progresoVacio, type Grupo, type Progreso } from "../shared/progreso";
+import { grupoVacio, progresoVacio, sanearGrupo, sanearProgreso, type Grupo, type Progreso } from "../shared/progreso";
 import type { Lectura } from "../shared/tipos";
 
 const CLAVE_PROGRESO = "prostata-lab:progreso:v1";
@@ -25,7 +25,7 @@ function escribir(clave: string, valor: unknown): boolean {
 }
 
 export const almacen = {
-  progreso: (): Progreso => leer(CLAVE_PROGRESO, progresoVacio),
+  progreso: (): Progreso => sanearProgreso(leer<unknown>(CLAVE_PROGRESO, progresoVacio)),
   guardarProgreso: (p: Progreso) => escribir(CLAVE_PROGRESO, p),
   borrarProgreso: () => {
     try {
@@ -34,7 +34,7 @@ export const almacen = {
       /* sin almacén */
     }
   },
-  grupo: (): Grupo => leer(CLAVE_GRUPO, grupoVacio),
+  grupo: (): Grupo => sanearGrupo(leer<unknown>(CLAVE_GRUPO, grupoVacio)),
   guardarGrupo: (g: Grupo) => escribir(CLAVE_GRUPO, g),
   borrador: (caso: string): Borrador | null => leer<Borrador | null>(CLAVE_BORRADOR + caso, () => null),
   guardarBorrador: (caso: string, b: Borrador) => escribir(CLAVE_BORRADOR + caso, b),

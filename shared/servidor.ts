@@ -87,6 +87,7 @@ export function limpiarLectura(entrada: unknown): Lectura | null {
   const e = entrada as Record<string, unknown>;
   const lesiones = Array.isArray(e.lesiones) ? e.lesiones.slice(0, 6) : [];
   const limpias: LesionAlumno[] = [];
+  const ids = new Set<string>();
   for (const [i, bruta] of lesiones.entries()) {
     if (!bruta || typeof bruta !== "object") continue;
     const l = bruta as Record<string, unknown>;
@@ -97,8 +98,12 @@ export function limpiarLectura(entrada: unknown): Lectura | null {
     const corte = m ? numero(m.corte, 0, 200) : null;
     const x = m ? numero(m.x, 0, 1000) : null;
     const y = m ? numero(m.y, 0, 1000) : null;
+    let id = texto(l.id, 8) || `L${i + 1}`;
+    // Ids únicos: una lesión repetida no puede esquivar la penalización por falso positivo.
+    for (let n = 1; ids.has(id); n++) id = `L${i + 1}#${n}`;
+    ids.add(id);
     limpias.push({
-      id: texto(l.id, 8) || `L${i + 1}`,
+      id,
       sectores,
       t2: numero(l.t2, 1, 5),
       dwi: numero(l.dwi, 1, 5),

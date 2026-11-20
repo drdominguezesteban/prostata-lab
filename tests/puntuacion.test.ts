@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import casosJson from "../datos/casos.json";
 import { corregir, emparejar, piradsPorRegla, PENALIZACION_ERROR_CRITICO, calcularPsad } from "../shared/puntuacion";
+import { limpiarLectura } from "../shared/servidor";
 import type { Caso, LesionAlumno, Lectura } from "../shared/tipos";
 
 const casos = casosJson as Caso[];
@@ -136,4 +137,17 @@ test("lectura vacía: nota baja, sin errores", () => {
   const r = corregir(c, { psad: null, lesiones: [], categoria: null, decision: null, impresion: "" });
   assert.equal(r.nota, 0);
   assert.equal(r.decision, "sin_responder");
+});
+
+test("la tolerancia de densidad de PSA es simétrica en el límite", () => {
+  const c = { ...casos[0]!, densidad_psa_correcta: 0.17 };
+  const psad = (v: number) => corregir(c, { ...lecturaPerfecta(c), psad: v }).componentes.find((x) => x.clave === "psad")!.valor;
+  assert.equal(psad(0.185), 1);
+  assert.equal(psad(0.155), 1);
+  assert.equal(psad(0.186), 0);
+});
+
+test("el servidor no deja lesiones con id repetido", () => {
+  const l = limpiarLectura({ lesiones: [lesion("L1", ["4p"]), lesion("L1", ["5p"]), lesion("L2", [])] })!;
+  assert.equal(new Set(l.lesiones.map((x) => x.id)).size, 3);
 });
