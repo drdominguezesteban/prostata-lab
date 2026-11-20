@@ -6,7 +6,7 @@
   "description": "Próstata Lab: entrenamiento en lectura de RM de próstata (PI-RADS v2.1) con casos PI-CAI.",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 43124 --strictPort",
-    "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.functions.json --noEmit && vite build",
+    "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.functions.json --noEmit && vite build && node scripts/sin_fugas.mjs",
     "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.functions.json --noEmit",
     "preview": "vite preview --host 127.0.0.1 --port 43124 --strictPort",

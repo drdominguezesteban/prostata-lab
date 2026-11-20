@@ -39,6 +39,10 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
         continue;
       }
       const v = aplicarNotas(r.datos.intentos, notas);
+      if (!v.intentos.length && r.datos.intentos.length) {
+        avisos.push(`${f.name}: ningún intento es válido. No se ha importado.`);
+        continue;
+      }
       const res = anadirAlGrupo(grupo, { ...r.datos, intentos: v.intentos });
       grupo = res.grupo;
       const extra = [

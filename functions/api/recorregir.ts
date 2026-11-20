@@ -1,8 +1,8 @@
+import { MAX_BYTES_LOTE } from "../../shared/limites";
 import { recorregirLote } from "../../shared/servidor";
 import { leerJson, respuesta } from "../../shared/http";
 
-// Hasta MAX_LOTE intentos de unos pocos kB cada uno.
-const LIMITE = 1_500_000;
+const LIMITE = MAX_BYTES_LOTE;
 
 export const onRequestPost: PagesFunction = async ({ request }) => {
   const r = await leerJson(request, LIMITE);

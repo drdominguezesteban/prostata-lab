@@ -7,6 +7,7 @@ Se publica desde la box y solo lo que está en `main`, con el sí de Mario. Fusi
 ```sh
 git clone https://github.com/drdominguezesteban/prostata-lab.git
 cd prostata-lab
+npx wrangler login            # si la box aún no tiene sesión de Cloudflare
 npx wrangler pages project create prostata-lab --production-branch main
 ```
 

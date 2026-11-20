@@ -87,6 +87,19 @@ test("marcar media glándula no puntúa la localización como un acierto", () =>
   assert.ok(amplia !== null && amplia <= 0.4, `amplia: ${amplia}`);
 });
 
+test("marcar media glándula puntúa menos que quedarse a un sector", () => {
+  const c = caso("11137_1001160"); // referencia: apex_PZ_pl_D
+  const nota = (sectores: string[]) =>
+    corregir(c, { ...lecturaPerfecta(c), lesiones: [lesion("L1", sectores, { t2: 3, dwi: 4, tamano: "<1.5", pirads: 4 })] }).nota;
+  const exacta = nota(["apex_PZ_pl_D"]);
+  const casi = nota(["apex_PZ_pl_D", "mid_PZ_pl_D"]);
+  const contigua = nota(["mid_PZ_pl_D"]);
+  const amplia = nota(["apex_PZ_pl_D", "apex_PZ_pm_D", "apex_PZ_a_D", "mid_PZ_pl_D", "mid_PZ_pm_D", "mid_PZ_a_D",
+    "apex_PZ_pl_I", "apex_PZ_pm_I", "mid_PZ_pl_I", "mid_PZ_pm_I", "apex_TZ_a_D", "mid_TZ_a_D"]);
+  assert.equal(exacta, 100);
+  assert.ok(exacta > casi && casi > contigua && contigua > amplia, `${exacta} ${casi} ${contigua} ${amplia}`);
+});
+
 test("dos lesiones: se empareja cada una con la suya aunque el orden cambie", () => {
   const c = caso("11260_1001283");
   const [l1, l2] = c.lesiones;
