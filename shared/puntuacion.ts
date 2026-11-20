@@ -47,7 +47,7 @@ export const CREDITO_DETECCION_PARCIAL = 0.5;
 export const PRECISION_DETECCION = 0.5;
 /** Margen para la densidad de PSA (redondeo a dos decimales). */
 export const TOLERANCIA_PSAD = 0.015;
-/** Nota mínima, sin error crítico, para contar como caso perfecto. */
+/** Nota mínima, sin error crítico y con la densidad de PSA correcta, para contar como caso perfecto. */
 export const UMBRAL_PERFECTO = 90;
 /** Localización mínima de cada lesión para un caso perfecto: con menos, está encontrada pero mal delimitada. */
 export const LOCALIZACION_PERFECTO = 2 / 3;
@@ -272,7 +272,8 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     nota,
     notaSinPenalizacion,
     critico,
-    perfecto: nota >= UMBRAL_PERFECTO && !critico && bienDelimitadas,
+    // Solo cambia la etiqueta: la densidad de PSA ya puntúa en la nota con su peso de siempre.
+    perfecto: nota >= UMBRAL_PERFECTO && !critico && psad === 1 && bienDelimitadas,
     componentes,
     parejas,
     comentarios,

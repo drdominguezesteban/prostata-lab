@@ -93,7 +93,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], aviso = ""): void {
       h("p", { class: "ayuda", id: "seud-ayuda" }, "Lo verá tu docente en su panel. No pongas tu nombre: usa uno que solo él o ella pueda relacionar contigo (p. ej. «R2-azul»)."),
       estadoSeud),
     h("div", { class: "acciones" },
-      h("button", { type: "button", class: "boton", disabled: !p.intentos.length, onclick: () => {
+      h("button", { type: "button", class: "boton", disabled: !p.intentos.length, "aria-describedby": "aviso-lectura-libre", onclick: () => {
         const r = prepararExportacion(seud.value);
         estadoSeud.textContent = r.ok ? r.aviso : r.mensaje;
         if (r.ok) descargar(r.nombre, r.contenido, "application/json");
@@ -101,6 +101,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], aviso = ""): void {
       h("label", { class: "boton secundario", for: "importar-propio" }, "Recuperar una copia"),
       importar,
       botonConfirmar("Borrar mi progreso", "Pulsa otra vez para borrarlo todo", () => { almacen.borrarProgreso(); pintar(el, catalogo); })),
+    h("p", { class: "nota", id: "aviso-lectura-libre" }, "Tu docente verá también tu lectura libre. No escribas datos de pacientes ni tu nombre."),
     h("p", { class: "nota estado-importacion", role: "status" }, aviso),
   );
 }
