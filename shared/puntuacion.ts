@@ -38,10 +38,19 @@ export const PENALIZACION_ERROR_CRITICO = 10;
 export const PENALIZACION_FALSO_POSITIVO = 0.25;
 /** Crédito de localización cuando la lesión está en un sector contiguo, sin compartir ninguno. */
 export const CREDITO_ADYACENTE = 0.4;
+/**
+ * Media detección para una lesión marcada solo en un sector contiguo (cerca, pero no encima) o con
+ * menos de la mitad de sus sectores dentro de la lesión (marcar media glándula no es localizarla).
+ */
+export const CREDITO_DETECCION_PARCIAL = 0.5;
+/** Mínima parte de los sectores marcados que debe caer en la lesión para contar la detección entera. */
+export const PRECISION_DETECCION = 0.5;
 /** Margen para la densidad de PSA (redondeo a dos decimales). */
 export const TOLERANCIA_PSAD = 0.015;
 /** Nota mínima, sin error crítico, para contar como caso perfecto. */
 export const UMBRAL_PERFECTO = 90;
+/** Localización mínima de cada lesión para un caso perfecto: con menos, está encontrada pero mal delimitada. */
+export const LOCALIZACION_PERFECTO = 2 / 3;
 
 export type TipoPareja = "coincide" | "adyacente" | "falso_positivo" | "omitida";
 
@@ -49,8 +58,10 @@ export interface Pareja {
   alumno: LesionAlumno | null;
   referencia: LesionReferencia | null;
   tipo: TipoPareja;
-  /** Solape de sectores (índice de Jaccard) cuando coinciden. */
+  /** Solape de sectores (coeficiente de Dice) cuando coinciden. */
   solape: number;
+  /** Parte de los sectores marcados por el alumno que caen en la lesión de referencia. */
+  precision: number;
 }
 
 export interface ValorComponente {
@@ -92,21 +103,21 @@ export function piradsPorRegla(zona: string | null, t2: number | null, dwi: numb
   return t2;
 }
 
-function puntuacionPareja(a: LesionAlumno, r: LesionReferencia): { tipo: TipoPareja; solape: number; orden: number } | null {
+function puntuacionPareja(a: LesionAlumno, r: LesionReferencia): { tipo: TipoPareja; solape: number; precision: number; orden: number } | null {
   const ref = new Set(r.sectores);
   const comunes = a.sectores.filter((s) => ref.has(s)).length;
   if (comunes > 0) {
-    const union = new Set([...a.sectores, ...r.sectores]).size;
-    const solape = comunes / union;
-    return { tipo: "coincide", solape, orden: 1 + solape };
+    // Dice: marcar de más o de menos baja el solape; marcar media glándula no puntúa como acertar.
+    const solape = (2 * comunes) / (a.sectores.length + r.sectores.length);
+    return { tipo: "coincide", solape, precision: comunes / a.sectores.length, orden: 1 + solape };
   }
   const contiguo = a.sectores.some((s) => r.sectores.some((t) => sonAdyacentes(s, t)));
-  return contiguo ? { tipo: "adyacente", solape: 0, orden: 0.5 } : null;
+  return contiguo ? { tipo: "adyacente", solape: 0, precision: 0, orden: 0.5 } : null;
 }
 
 /** Empareja lesiones del alumno con las de referencia, de mejor a peor solape. */
 export function emparejar(lesiones: LesionAlumno[], referencia: LesionReferencia[]): Pareja[] {
-  const candidatas: Array<{ a: LesionAlumno; r: LesionReferencia; tipo: TipoPareja; solape: number; orden: number }> = [];
+  const candidatas: Array<{ a: LesionAlumno; r: LesionReferencia; tipo: TipoPareja; solape: number; precision: number; orden: number }> = [];
   for (const a of lesiones) {
     for (const r of referencia) {
       const p = puntuacionPareja(a, r);
@@ -121,13 +132,13 @@ export function emparejar(lesiones: LesionAlumno[], referencia: LesionReferencia
     if (usadasA.has(c.a.id) || usadasR.has(c.r.id)) continue;
     usadasA.add(c.a.id);
     usadasR.add(c.r.id);
-    parejas.push({ alumno: c.a, referencia: c.r, tipo: c.tipo, solape: c.solape });
+    parejas.push({ alumno: c.a, referencia: c.r, tipo: c.tipo, solape: c.solape, precision: c.precision });
   }
   for (const r of referencia) {
-    if (!usadasR.has(r.id)) parejas.push({ alumno: null, referencia: r, tipo: "omitida", solape: 0 });
+    if (!usadasR.has(r.id)) parejas.push({ alumno: null, referencia: r, tipo: "omitida", solape: 0, precision: 0 });
   }
   for (const a of lesiones) {
-    if (!usadasA.has(a.id)) parejas.push({ alumno: a, referencia: null, tipo: "falso_positivo", solape: 0 });
+    if (!usadasA.has(a.id)) parejas.push({ alumno: a, referencia: null, tipo: "falso_positivo", solape: 0, precision: 0 });
   }
   const orden = (p: Pareja) => (p.referencia ? referencia.indexOf(p.referencia) : 100 + lesiones.indexOf(p.alumno!));
   return parejas.sort((x, y) => orden(x) - orden(y));
@@ -190,7 +201,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
   const hayReferencia = referencia.length > 0;
 
   const deteccion = hayReferencia
-    ? acotar((emparejadas.length - PENALIZACION_FALSO_POSITIVO * fp) / referencia.length)
+    ? acotar((emparejadas.reduce((s, p) => s + (p.tipo === "coincide" && p.precision >= PRECISION_DETECCION ? 1 : CREDITO_DETECCION_PARCIAL), 0) - PENALIZACION_FALSO_POSITIVO * fp) / referencia.length)
     : acotar(1 - 0.5 * fp);
 
   const porReferencia = (f: (p: Pareja) => number) =>
@@ -199,9 +210,13 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
       return p ? f(p) : 0;
     }));
 
-  const localizacion = hayReferencia
-    ? porReferencia((p) => (p.tipo === "coincide" ? 0.5 + 0.5 * p.solape : CREDITO_ADYACENTE))
-    : null;
+  const locPareja = (p: Pareja) => (p.tipo === "coincide" ? p.solape : CREDITO_ADYACENTE);
+  const localizacion = hayReferencia ? porReferencia(locPareja) : null;
+  // Perfecto exige delimitar bien cada lesión de referencia, no solo la media.
+  const bienDelimitadas = referencia.every((r) => {
+    const p = emparejadas.find((x) => x.referencia === r);
+    return !!p && locPareja(p) >= LOCALIZACION_PERFECTO - 1e-9;
+  });
 
   const secuencias = hayReferencia
     ? porReferencia((p) => {
@@ -257,7 +272,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     nota,
     notaSinPenalizacion,
     critico,
-    perfecto: nota >= UMBRAL_PERFECTO && !critico,
+    perfecto: nota >= UMBRAL_PERFECTO && !critico && bienDelimitadas,
     componentes,
     parejas,
     comentarios,

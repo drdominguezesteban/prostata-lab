@@ -1,8 +1,8 @@
 import { botonConfirmar, descargar, fecha, h, vaciar } from "../dom";
 import { almacen } from "../almacen";
-import { casos } from "../api";
+import { casos, recorregir } from "../api";
 import { ETIQUETAS } from "../../shared/puntuacion";
-import { anadirAlGrupo, csvGrupo, leerExportacion, resumenPorCaso, resumir, ultimos } from "../../shared/progreso";
+import { anadirAlGrupo, aplicarNotas, csvGrupo, leerExportacion, resumenPorCaso, resumir, ultimos } from "../../shared/progreso";
 import type { CasoPublico } from "../../shared/servidor";
 
 export async function vistaDocente(el: HTMLElement): Promise<void> {
@@ -30,9 +30,26 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
         avisos.push(`${f.name}: ${r.mensaje}`);
         continue;
       }
-      const res = anadirAlGrupo(grupo, r.datos);
+      // La nota del archivo no se usa: el alumno podría haberla editado. Se corrige de nuevo en el servidor.
+      let notas;
+      try {
+        notas = await recorregir(r.datos.intentos.map((i) => ({ caso: i.caso, lectura: i.lectura })));
+      } catch {
+        avisos.push(`${f.name}: no se ha podido verificar con el servidor. No se ha importado; inténtalo de nuevo.`);
+        continue;
+      }
+      const v = aplicarNotas(r.datos.intentos, notas);
+      if (!v.intentos.length && r.datos.intentos.length) {
+        avisos.push(`${f.name}: ningún intento es válido. No se ha importado.`);
+        continue;
+      }
+      const res = anadirAlGrupo(grupo, { ...r.datos, intentos: v.intentos });
       grupo = res.grupo;
-      avisos.push(`${f.name}: ${r.datos.intentos.length} intentos de «${res.seudonimo}».`);
+      const extra = [
+        v.cambiadas ? `${v.cambiadas} con la nota recalculada en el servidor, distinta de la del archivo` : "",
+        v.descartados ? `${v.descartados} descartados por no ser válidos` : "",
+      ].filter(Boolean).join("; ");
+      avisos.push(`${f.name}: ${v.intentos.length} intentos de «${res.seudonimo}»${extra ? ` (${extra})` : ""}.`);
     }
     almacen.guardarGrupo(grupo);
     pintar(el, catalogo, avisos);
@@ -56,7 +73,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
     h("h1", null, "Panel docente"),
     h("p", { class: "entradilla" },
       "Cada alumno exporta su progreso desde «Mis resultados» y te envía el archivo. Aquí los reúnes para ver el grupo. ",
-      "Los datos se quedan en este navegador: no se suben a ningún servidor."),
+      "Los datos se quedan en este navegador. Para comprobar las notas, cada lectura se corrige de nuevo en el servidor sin el seudónimo, y no se guarda allí."),
     h("p", { class: "nota" }, "Los archivos solo llevan un seudónimo. Si alguno trae un nombre real, pide al alumno que lo cambie y vuelva a exportar."),
     zona,
     entrada,

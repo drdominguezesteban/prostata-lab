@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import casosJson from "../datos/casos.json";
 import { corregir } from "../shared/puntuacion";
-import { anadirAlGrupo, csvGrupo, exportar, fusionarIntentos, grupoVacio, intentoDesde, leerExportacion, mejoraEnRepetidos, progresoVacio, resumenPorCaso, resumir, sanearGrupo, sanearProgreso, seudonimoValido } from "../shared/progreso";
+import { anadirAlGrupo, aplicarNotas, csvGrupo, exportar, fusionarIntentos, grupoVacio, intentoDesde, leerExportacion, mejoraEnRepetidos, progresoVacio, resumenPorCaso, resumir, sanearGrupo, sanearProgreso, seudonimoValido } from "../shared/progreso";
 import { corregirPeticion, catalogo, limpiarLectura } from "../shared/servidor";
 import type { Caso, Lectura } from "../shared/tipos";
 
@@ -116,4 +116,17 @@ test("«Sin seudónimo N» no reutiliza un número ya ocupado", () => {
   delete g.alumnos["Sin seudónimo 1"];
   g = anadirAlGrupo(g, { ...JSON.parse(exportar(progresoVacio())), seudonimo: "" }).grupo;
   assert.equal(Object.keys(g.alumnos).length, 2);
+});
+
+test("el panel usa la nota del servidor, no la del archivo", () => {
+  const bueno = intentoDesde("c1", { psad: 0.1, lesiones: [], categoria: 2, decision: "a", impresion: "" },
+    { nota: 40, critico: true, perfecto: false, componentes: [] } as never, 60);
+  const inflado = { ...bueno, id: "b", nota: 100, critico: false };
+  const v = aplicarNotas([bueno, inflado], [
+    { nota: 40, critico: true, perfecto: false, componentes: {} },
+    { nota: 40, critico: true, perfecto: false, componentes: {} },
+  ]);
+  assert.equal(v.cambiadas, 1);
+  assert.deepEqual(v.intentos.map((i) => i.nota), [40, 40]);
+  assert.equal(aplicarNotas([bueno], [null]).descartados, 1);
 });

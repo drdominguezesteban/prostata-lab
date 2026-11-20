@@ -5,7 +5,8 @@
  */
 import casosJson from "../datos/casos.json";
 import geometriaJson from "../datos/geometria.json";
-import { corregir, type Resultado } from "./puntuacion";
+import { MAX_LOTE } from "./limites";
+import { corregir, type Componente, type Resultado } from "./puntuacion";
 import { esSector, legibilizar } from "./sectores";
 import type { Caso, Epe, LesionAlumno, Lectura, OpcionDecision, Tamano } from "./tipos";
 
@@ -126,12 +127,57 @@ export function casoPorId(id: string): Caso | undefined {
   return CASOS.find((c) => c.id === id);
 }
 
+/**
+ * La referencia solo se entrega tras una lectura completa, igual que exige el formulario:
+ * densidad de PSA, cada lesión con sector y categoría, categoría del estudio y decisión.
+ */
+export function faltaEnLectura(l: Lectura): string | null {
+  if (l.psad === null || l.psad <= 0 || l.psad > 5) return "Falta la densidad de PSA.";
+  for (const x of l.lesiones) {
+    if (!x.sectores.length || x.pirads === null) return `Falta el sector o la categoría de ${x.id}.`;
+  }
+  if (l.categoria === null) return "Falta la categoría PI-RADS del estudio.";
+  if (l.decision === null) return "Falta la decisión clínica.";
+  return null;
+}
+
+
+export interface NotaRecalculada {
+  nota: number;
+  critico: boolean;
+  perfecto: boolean;
+  componentes: Partial<Record<Componente, number | null>>;
+}
+
+/**
+ * Panel docente: vuelve a corregir en el servidor los intentos importados para no fiarse de la nota
+ * que trae el archivo. Solo devuelve puntuaciones, nunca la referencia. `null` = intento no válido.
+ */
+export function recorregirLote(cuerpo: unknown): { estado: number; json: { ok: true; notas: Array<NotaRecalculada | null> } | { ok: false; mensaje: string } } {
+  const intentos = (cuerpo as { intentos?: unknown } | null)?.intentos;
+  if (!Array.isArray(intentos)) return { estado: 400, json: { ok: false, mensaje: "Faltan los intentos." } };
+  if (intentos.length > MAX_LOTE) return { estado: 413, json: { ok: false, mensaje: `Como máximo ${MAX_LOTE} intentos por vez.` } };
+  const notas = intentos.map((i): NotaRecalculada | null => {
+    const e = i as { caso?: unknown; lectura?: unknown } | null;
+    const caso = typeof e?.caso === "string" ? casoPorId(e.caso) : undefined;
+    const lectura = caso ? limpiarLectura(e?.lectura) : null;
+    if (!caso || !lectura || faltaEnLectura(lectura)) return null;
+    const r = corregir(caso, lectura);
+    const componentes: NotaRecalculada["componentes"] = {};
+    for (const c of r.componentes) componentes[c.clave] = c.valor;
+    return { nota: r.nota, critico: r.critico, perfecto: r.perfecto, componentes };
+  });
+  return { estado: 200, json: { ok: true, notas } };
+}
+
 export function corregirPeticion(cuerpo: unknown): { estado: number; json: RespuestaCorreccion | { ok: false; mensaje: string } } {
   const c = cuerpo as { caso?: unknown; lectura?: unknown } | null;
   const caso = typeof c?.caso === "string" ? casoPorId(c.caso) : undefined;
   if (!caso) return { estado: 404, json: { ok: false, mensaje: "No encuentro ese caso." } };
   const lectura = limpiarLectura(c?.lectura);
   if (!lectura) return { estado: 400, json: { ok: false, mensaje: "La lectura no tiene un formato válido." } };
+  const falta = faltaEnLectura(lectura);
+  if (falta) return { estado: 422, json: { ok: false, mensaje: falta } };
   const resultado = corregir(caso, lectura);
   return {
     estado: 200,

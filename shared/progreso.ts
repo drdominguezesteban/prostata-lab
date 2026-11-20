@@ -262,3 +262,19 @@ export function csvGrupo(g: Grupo, casos: string[]): string {
   };
   return [cab, ...filas].map((f) => f.map(esc).join(";")).join("\n") + "\n";
 }
+
+/** Sustituye la puntuación del archivo por la recalculada en el servidor (`null` = intento no válido). */
+export function aplicarNotas(
+  intentos: Intento[],
+  notas: Array<Pick<Intento, "nota" | "critico" | "perfecto" | "componentes"> | null>,
+): { intentos: Intento[]; cambiadas: number; descartados: number } {
+  const r: Intento[] = [];
+  let cambiadas = 0;
+  intentos.forEach((i, k) => {
+    const n = notas[k];
+    if (!n) return;
+    if (n.nota !== i.nota || n.critico !== i.critico || n.perfecto !== i.perfecto) cambiadas++;
+    r.push({ ...i, nota: n.nota, critico: n.critico, perfecto: n.perfecto, componentes: n.componentes });
+  });
+  return { intentos: r, cambiadas, descartados: intentos.length - r.length };
+}

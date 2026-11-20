@@ -1,5 +1,5 @@
 import { h, vaciar } from "../dom";
-import { CREDITO_ADYACENTE, ETIQUETAS, PENALIZACION_ERROR_CRITICO, PENALIZACION_FALSO_POSITIVO, PESOS, UMBRAL_PERFECTO, type Componente } from "../../shared/puntuacion";
+import { CREDITO_ADYACENTE, CREDITO_DETECCION_PARCIAL, ETIQUETAS, PENALIZACION_ERROR_CRITICO, PENALIZACION_FALSO_POSITIVO, PESOS, LOCALIZACION_PERFECTO, UMBRAL_PERFECTO, type Componente } from "../../shared/puntuacion";
 
 export function vistaMetodo(el: HTMLElement): void {
   const pct = (v: number) => `${Math.round(v * 100)} %`;
@@ -15,8 +15,8 @@ export function vistaMetodo(el: HTMLElement): void {
       h("thead", null, h("tr", null, h("th", { scope: "col" }, "Componente"), h("th", { scope: "col" }, "Peso"), h("th", { scope: "col" }, "Cómo se puntúa"))),
       h("tbody", null,
         ...([
-          ["deteccion", `Lesiones de referencia encontradas. Cada lesión marcada sin correspondencia resta ${pct(PENALIZACION_FALSO_POSITIVO)} de una lesión. En un estudio negativo, cada falso positivo resta la mitad.`],
-          ["localizacion", `Solape de sectores con la lesión de referencia (50–100 %). Si la lesión está en un sector contiguo sin compartir ninguno, ${pct(CREDITO_ADYACENTE)}.`],
+          ["deteccion", `Lesiones de referencia encontradas. Cuenta como el ${pct(CREDITO_DETECCION_PARCIAL)} de una lesión si se marca solo en un sector contiguo o si menos de la mitad de los sectores marcados caen en ella. Cada lesión marcada sin correspondencia resta ${pct(PENALIZACION_FALSO_POSITIVO)} de una lesión. En un estudio negativo, cada falso positivo resta la mitad.`],
+          ["localizacion", `Solape de sectores con la lesión de referencia (coeficiente de Dice): marcar sectores de más o de menos lo reduce. Si la lesión está en un sector contiguo sin compartir ninguno, ${pct(CREDITO_ADYACENTE)}.`],
           ["secuencias", "T2, DWI y tamaño de cada lesión encontrada. Acertar vale 1; equivocarse en un punto, 0,5."],
           ["pirads", "Categoría del estudio. Exacta, 1; a un punto, 0,5. Se puntúa aunque la lesión no se haya emparejado."],
           ["psad", "Densidad de PSA con dos decimales (se tolera el redondeo)."],
@@ -26,7 +26,7 @@ export function vistaMetodo(el: HTMLElement): void {
       h("li", null, "Solo cuentan como lesiones tuyas las de PI-RADS ≥3. Puedes anotar una lesión de categoría 1–2 sin que te reste."),
       h("li", null, "En un estudio sin lesiones, localización y secuencias no aplican y el resto de componentes se reescala a 100."),
       h("li", null, `Error crítico (una decisión opuesta a la indicada, p. ej. no biopsiar un PI-RADS 4): la decisión vale 0 y se restan ${PENALIZACION_ERROR_CRITICO} puntos al total. El resto de componentes sigue contando, para que veas en qué acertaste.`),
-      h("li", null, `Caso perfecto: ${UMBRAL_PERFECTO} puntos o más, sin error crítico.`),
+      h("li", null, `Caso perfecto: ${UMBRAL_PERFECTO} puntos o más, sin error crítico y con cada lesión localizada al ${pct(LOCALIZACION_PERFECTO)} o más.`),
       h("li", null, "Error de regla: si tu categoría no sigue PI-RADS v2.1 con tus propias puntuaciones de T2 y DWI, la corrección te lo señala aparte del error de lectura.")),
 
     h("h2", null, "De dónde salen los casos"),
