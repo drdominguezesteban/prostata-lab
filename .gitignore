@@ -27,3 +27,4 @@ prod-snapshot-*/
 *.m4v
 # Próstata Lab
 deploy*.log
+.vite/
