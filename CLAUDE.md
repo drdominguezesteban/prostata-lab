@@ -8,7 +8,9 @@ PI-CAI. Proyecto personal de Mario, en `*.pages.dev`. Sustituye a la versión de
 - Vite + TypeScript sin framework (`src/`), con Cloudflare Pages Functions (`functions/api/`).
 - Las respuestas no llegan al navegador: `datos/casos.json` y `datos/geometria.json` solo los importa
   `shared/servidor.ts`. `GET /api/casos` da el catálogo sin respuestas; `POST /api/corregir` corrige y
-  devuelve la referencia. Una prueba falla si una clave de respuesta aparece en el catálogo.
+  devuelve la referencia solo si la lectura está completa; `POST /api/recorregir` (panel docente)
+  devuelve solo notas. Una prueba falla si una clave de respuesta aparece en el catálogo y otra si
+  `src/` importa valores de `shared/servidor` o de `datos/`. Publicación: `docs/PUBLICAR.md`.
 - Progreso del alumno en `localStorage`, con exportación/importación JSON. El panel docente reúne
   esos archivos en su propio `localStorage`. Solo seudónimos; nada se sube a ningún servidor.
 - Datos e imágenes se regeneran con `scripts/importar_casos.py` desde `~/Dev/simulador-rm-prostata/export`
