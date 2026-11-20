@@ -2,7 +2,8 @@ import { botonConfirmar, descargar, fecha, h, vaciar } from "../dom";
 import { almacen } from "../almacen";
 import { casos } from "../api";
 import { ETIQUETAS, PESOS, type Componente } from "../../shared/puntuacion";
-import { exportar, fusionarIntentos, leerExportacion, mejoraEnRepetidos, resumir, seudonimoValido, ultimos } from "../../shared/progreso";
+import { mejoraEnRepetidos, resumir, ultimos } from "../../shared/progreso";
+import { guardarSeudonimo, prepararExportacion, recuperarCopia } from "../archivos";
 import type { CasoPublico } from "../../shared/servidor";
 import { barra, porcentaje } from "./comun";
 
@@ -16,8 +17,10 @@ export async function vistaResultados(el: HTMLElement): Promise<void> {
   pintar(el, catalogo);
 }
 
-function pintar(el: HTMLElement, catalogo: CasoPublico[]): void {
-  const p = almacen.progreso();
+function pintar(el: HTMLElement, catalogo: CasoPublico[], aviso = ""): void {
+  const guardado = almacen.progreso();
+  // Solo cuentan los intentos de casos que existen (si el catálogo ha cargado).
+  const p = catalogo.length ? { ...guardado, intentos: guardado.intentos.filter((i) => catalogo.some((c) => c.id === i.caso)) } : guardado;
   const r = resumir(p.intentos);
   const u = ultimos(p.intentos);
   const numero = (id: string) => catalogo.find((c) => c.id === id)?.numero ?? id;
@@ -25,35 +28,18 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[]): void {
 
   const seud = h("input", { id: "seudonimo", type: "text", value: p.seudonimo, maxlength: 24, autocomplete: "off", "aria-describedby": "seud-ayuda seud-estado" });
   const estadoSeud = h("p", { class: "error-campo", id: "seud-estado", role: "status" });
-  const guardarSeud = () => {
-    const v = seud.value.trim();
-    if (v && !seudonimoValido(v)) {
-      estadoSeud.textContent = "Usa un seudónimo corto (2–24 caracteres, sin correo ni nombre y apellidos).";
-      return;
-    }
-    const q = almacen.progreso();
-    q.seudonimo = v;
-    almacen.guardarProgreso(q);
-    estadoSeud.textContent = "Guardado.";
+  const guardarSeud = (): boolean => {
+    const r = guardarSeudonimo(seud.value);
+    estadoSeud.textContent = r.mensaje;
+    return r.ok;
   };
 
   const importar = h("input", { type: "file", accept: "application/json,.json", class: "oculto", id: "importar-propio" });
-  const estadoImport = h("p", { class: "nota", role: "status" });
   importar.addEventListener("change", async () => {
     const f = importar.files?.[0];
     if (!f) return;
-    const lectura = leerExportacion(await f.text());
-    if (!lectura.ok) {
-      estadoImport.textContent = lectura.mensaje;
-      return;
-    }
-    const q = almacen.progreso();
-    const antes = q.intentos.length;
-    q.intentos = fusionarIntentos(q.intentos, lectura.datos.intentos);
-    if (!q.seudonimo && lectura.datos.seudonimo) q.seudonimo = lectura.datos.seudonimo;
-    almacen.guardarProgreso(q);
-    pintar(el, catalogo);
-    el.querySelector(".estado-importacion")!.textContent = `Copia recuperada: ${q.intentos.length - antes} intentos nuevos.`;
+    const r = await recuperarCopia(f, catalogo.length ? catalogo.map((c) => c.id) : null);
+    pintar(el, catalogo, r.mensaje);
   });
 
   const repasar = [...u.values()].filter((i) => i.critico || i.nota < 70).sort((a, b) => a.nota - b.nota);
@@ -108,16 +94,14 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[]): void {
       estadoSeud),
     h("div", { class: "acciones" },
       h("button", { type: "button", class: "boton", disabled: !p.intentos.length, onclick: () => {
-        guardarSeud();
-        const q = almacen.progreso();
-        const nombre = `prostata-lab-${(q.seudonimo || "progreso").replace(/[^\p{L}\p{N}_-]+/gu, "-")}-${new Date().toISOString().slice(0, 10)}.json`;
-        descargar(nombre, exportar(q), "application/json");
+        const r = prepararExportacion(seud.value);
+        estadoSeud.textContent = r.ok ? r.aviso : r.mensaje;
+        if (r.ok) descargar(r.nombre, r.contenido, "application/json");
       } }, "Exportar mi progreso"),
       h("label", { class: "boton secundario", for: "importar-propio" }, "Recuperar una copia"),
       importar,
       botonConfirmar("Borrar mi progreso", "Pulsa otra vez para borrarlo todo", () => { almacen.borrarProgreso(); pintar(el, catalogo); })),
-    h("p", { class: "nota estado-importacion", role: "status" }),
-    estadoImport,
+    h("p", { class: "nota estado-importacion", role: "status" }, aviso),
   );
 }
 

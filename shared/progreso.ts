@@ -3,6 +3,7 @@
  * archivos que exportan los alumnos). Sin nombres: solo un seudónimo que elige el alumno.
  */
 import { PESOS, type Componente, type Resultado } from "./puntuacion";
+import { MAX_BYTES_ARCHIVO, MAX_INTENTOS_ARCHIVO } from "./limites";
 import type { Lectura } from "./tipos";
 
 export const FORMATO = "prostata-lab-progreso";
@@ -54,7 +55,7 @@ export function intentoDesde(caso: string, lectura: Lectura, r: Resultado, segun
 /** Un seudónimo no puede parecer un nombre completo ni llevar datos de contacto. */
 export function seudonimoValido(s: string): boolean {
   const t = s.trim();
-  return t.length >= 2 && t.length <= 24 && /^[\p{L}\p{N} ._-]+$/u.test(t) && !/@/.test(t) && t.split(/\s+/).length <= 2;
+  return t.length >= 2 && t.length <= 24 && /^[\p{L}\p{N}][\p{L}\p{N} ._-]*$/u.test(t) && !/@/.test(t) && t.split(/\s+/).length <= 2;
 }
 
 export function exportar(p: Progreso, ahora = new Date()): string {
@@ -84,7 +85,7 @@ function esLesion(x: unknown): boolean {
   );
 }
 
-function esLectura(x: unknown): boolean {
+export function esLectura(x: unknown): boolean {
   return (
     esObjeto(x) &&
     nuloOFinito(x.psad) &&
@@ -105,13 +106,41 @@ export function esIntento(x: unknown): x is Intento {
     typeof i.caso === "string" &&
     typeof i.fin === "string" &&
     !Number.isNaN(Date.parse(i.fin)) &&
+    fechaRazonable(i.fin) &&
     finito(i.segundos) &&
+    i.segundos >= 0 &&
+    i.segundos <= MAX_SEGUNDOS &&
     finito(i.nota) &&
+    i.nota >= 0 &&
+    i.nota <= 100 &&
     typeof i.critico === "boolean" &&
     esLectura(i.lectura) &&
     esObjeto(i.componentes) &&
-    Object.values(i.componentes).every((v) => v === null || finito(v))
+    Object.values(i.componentes).every((v) => v === null || (finito(v) && v >= 0 && v <= 1))
   );
+}
+
+/** Un intento no puede durar más de 30 días de lectura (el reloj solo corre con la pestaña visible). */
+const MAX_SEGUNDOS = 30 * 24 * 3600;
+
+/** Fechas entre 2020 y 2100: descarta «año 1» o «año 9999» de un archivo manipulado. */
+function fechaRazonable(iso: string): boolean {
+  const t = Date.parse(iso);
+  return t >= Date.UTC(2020, 0, 1) && t < Date.UTC(2100, 0, 1);
+}
+
+export interface Borrador {
+  lectura: Lectura;
+  paso: number;
+  segundos: number;
+}
+
+/** Lo leído del almacén para un caso a medias: si está dañado o es de otro formato, se descarta. */
+export function sanearBorrador(x: unknown): Borrador | null {
+  if (!esObjeto(x) || !esLectura(x.lectura)) return null;
+  const paso = Number.isInteger(x.paso) && (x.paso as number) >= 0 && (x.paso as number) <= 2 ? (x.paso as number) : 0;
+  const segundos = finito(x.segundos) && x.segundos >= 0 && x.segundos <= MAX_SEGUNDOS ? x.segundos : 0;
+  return { lectura: x.lectura as unknown as Lectura, paso, segundos };
 }
 
 /** Lo leído del almacén: se descartan los intentos dañados en vez de fallar. */
@@ -131,7 +160,10 @@ export function sanearGrupo(x: unknown): Grupo {
   return g;
 }
 
-export function leerExportacion(textoJson: string): { ok: true; datos: Exportacion } | { ok: false; mensaje: string } {
+export type ArchivoLeido = { ok: true; datos: Exportacion; seudonimoDescartado: boolean } | { ok: false; mensaje: string };
+
+export function leerExportacion(textoJson: string): ArchivoLeido {
+  if (textoJson.length > MAX_BYTES_ARCHIVO) return { ok: false, mensaje: archivoGrande() };
   let d: unknown;
   try {
     d = JSON.parse(textoJson);
@@ -141,8 +173,22 @@ export function leerExportacion(textoJson: string): { ok: true; datos: Exportaci
   const e = d as Exportacion;
   if (!e || e.formato !== FORMATO) return { ok: false, mensaje: "No es un archivo de progreso de Próstata Lab." };
   if (e.version !== VERSION) return { ok: false, mensaje: "Versión de archivo no reconocida." };
-  if (!Array.isArray(e.intentos) || !e.intentos.every(esIntento)) return { ok: false, mensaje: "El archivo tiene intentos dañados." };
-  return { ok: true, datos: { ...e, seudonimo: typeof e.seudonimo === "string" ? e.seudonimo.trim() : "" } };
+  if (!Array.isArray(e.intentos)) return { ok: false, mensaje: "El archivo tiene intentos dañados." };
+  if (e.intentos.length > MAX_INTENTOS_ARCHIVO) return { ok: false, mensaje: `El archivo tiene demasiados intentos (como máximo ${MAX_INTENTOS_ARCHIVO}).` };
+  if (!e.intentos.every(esIntento)) return { ok: false, mensaje: "El archivo tiene intentos dañados." };
+  // Solo seudónimos: un nombre completo o un correo no entra (no se repite en ningún mensaje).
+  const s = typeof e.seudonimo === "string" ? e.seudonimo.trim() : "";
+  const valido = !s || seudonimoValido(s);
+  return { ok: true, datos: { ...e, seudonimo: valido ? s : "" }, seudonimoDescartado: !valido };
+}
+
+/** Comprobación previa al leer un archivo (por su tamaño en bytes), para no cargar en memoria uno enorme. */
+export function archivoDemasiadoGrande(bytes: number): boolean {
+  return bytes > MAX_BYTES_ARCHIVO;
+}
+
+export function archivoGrande(): string {
+  return `El archivo es demasiado grande (como máximo ${Math.round(MAX_BYTES_ARCHIVO / 1_000_000)} MB).`;
 }
 
 /** Une dos listas de intentos sin duplicar (por id), en orden cronológico. */
@@ -220,7 +266,13 @@ export function grupoVacio(): Grupo {
 
 export function anadirAlGrupo(g: Grupo, e: Exportacion, ahora = new Date()): { grupo: Grupo; seudonimo: string } {
   let seudonimo = e.seudonimo;
-  for (let n = Object.keys(g.alumnos).length + 1; !seudonimo || (!e.seudonimo && Object.hasOwn(g.alumnos, seudonimo)); n++) seudonimo = `Sin seudónimo ${n}`;
+  if (!seudonimo) {
+    // Sin seudónimo: si el archivo comparte intentos con un alumno ya importado, es el mismo archivo.
+    const ids = new Set(e.intentos.map((i) => i.id));
+    const mismo = Object.keys(g.alumnos).find((s) => g.alumnos[s]!.intentos.some((i) => ids.has(i.id)));
+    if (mismo) seudonimo = mismo;
+    else for (let n = Object.keys(g.alumnos).length + 1; !seudonimo || Object.hasOwn(g.alumnos, seudonimo); n++) seudonimo = `Sin seudónimo ${n}`;
+  }
   const previo = Object.hasOwn(g.alumnos, seudonimo) ? g.alumnos[seudonimo]!.intentos : [];
   return {
     grupo: {
@@ -257,7 +309,8 @@ export function csvGrupo(g: Grupo, casos: string[]): string {
     return [s, r.casos, r.intentos, r.notaMedia ?? "", r.criticos, r.perfectos, r.minutos, ...casos.map((c) => u.get(c)?.nota ?? "")];
   });
   const esc = (v: unknown) => {
-    const t = String(v);
+    // Una celda que empieza por = + - @ (o tabulador / retorno) la ejecuta Excel o LibreOffice como fórmula.
+    const t = typeof v === "string" && /^[=+\-@\t\r]/.test(v) ? `'${v}` : String(v);
     return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
   };
   return [cab, ...filas].map((f) => f.map(esc).join(";")).join("\n") + "\n";

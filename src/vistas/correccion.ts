@@ -19,10 +19,21 @@ export async function vistaCorreccion(el: HTMLElement, id: string): Promise<void
     return;
   }
   vaciar(el, cargando("Corrigiendo…"));
-  let caso, r;
+  let catalogo;
   try {
-    caso = (await casos()).find((c) => c.id === intento.caso);
-    if (!caso) throw new Error("caso");
+    catalogo = await casos();
+  } catch {
+    vaciar(el, errorCarga());
+    return;
+  }
+  const caso = catalogo.find((c) => c.id === intento.caso);
+  if (!caso) {
+    // No es un fallo de conexión: el intento es de un caso que no está en el catálogo.
+    vaciar(el, h("p", { class: "aviso" }, "Este intento es de un caso que no está en Próstata Lab, así que no se puede corregir. ", h("a", { href: "#/resultados" }, "Volver a mis resultados")));
+    return;
+  }
+  let r;
+  try {
     r = await corregir(caso.id, intento.lectura);
   } catch {
     vaciar(el, errorCarga());

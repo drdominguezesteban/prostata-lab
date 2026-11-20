@@ -4,6 +4,7 @@ import { Visor, dentro, type Contorno } from "../visor";
 import { mapaSectores } from "../mapa";
 import type { CasoPublico } from "../../shared/servidor";
 import { cargando, errorCarga } from "./comun";
+import { lejosDeLaGlandula } from "../zonas";
 
 interface Zonal {
   cortes: Record<string, { PZ?: number[][][]; TZ?: number[][][] }>;
@@ -66,9 +67,12 @@ export async function vistaAnatomia(el: HTMLElement): Promise<void> {
         const zona = z?.PZ && dentro(z.PZ, p.x, p.y) ? "zona periférica" : z?.TZ && dentro(z.TZ, p.x, p.y) ? "zona de transición" : null;
         const lado = p.x < 192 ? "derecho" : "izquierdo";
         visor?.ponerMarcas([{ ...p, etiqueta: "", color: "#facc15" }]);
+        const lejos = !zona && lejosDeLaGlandula([...(z?.PZ ?? []), ...(z?.TZ ?? [])], p.x, p.y, c.tecnica.mm_por_px);
         respuesta.textContent = zona
           ? `${zona[0]!.toUpperCase()}${zona.slice(1)}, lado ${lado} del paciente, ${nivel(p.corte)}.`
-          : `Fuera de las zonas segmentadas (cápsula, estroma anterior, uretra o tejido periprostático). Lado ${lado}; ${nivel(p.corte)}.`;
+          : lejos
+            ? "Ese punto queda lejos de la próstata. Haz clic sobre la glándula o cerca de su borde."
+            : `Fuera de las zonas segmentadas (cápsula, estroma anterior, uretra o tejido periprostático). Lado ${lado}; ${nivel(p.corte)}.`;
       },
     });
     visor.ponerContornos(contornos());

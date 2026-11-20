@@ -13,7 +13,8 @@ function apiLocal(): Plugin {
           res.end(JSON.stringify(catalogo()));
           return;
         }
-        const manejador = req.method === "POST" ? { "/api/corregir": corregirPeticion, "/api/recorregir": recorregirLote }[ruta] : undefined;
+        const rutasPost: Record<string, typeof corregirPeticion | typeof recorregirLote> = { "/api/corregir": corregirPeticion, "/api/recorregir": recorregirLote };
+        const manejador = req.method === "POST" ? rutasPost[ruta] : undefined;
         if (manejador) {
           let cuerpo = "";
           req.on("data", (d: Buffer) => (cuerpo += d.toString("utf-8")));
@@ -27,6 +28,13 @@ function apiLocal(): Plugin {
               res.end(JSON.stringify({ ok: false, mensaje: "La petición no es JSON." }));
             }
           });
+          return;
+        }
+        // Igual que en Pages: una ruta de la API con otro método da 405 y una que no existe, 404 (en JSON).
+        if (ruta.startsWith("/api/")) {
+          const conocida = ruta === "/api/casos" || ruta in rutasPost;
+          res.statusCode = conocida ? 405 : 404;
+          res.end(JSON.stringify({ ok: false, mensaje: conocida ? "Método no permitido." : "No existe esa ruta de la API." }));
           return;
         }
         res.removeHeader("content-type");
