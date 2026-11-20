@@ -9,8 +9,10 @@ function apiLocal(): Plugin {
       server.middlewares.use((req, res, next) => {
         const ruta = req.url?.split("?")[0] ?? "";
         res.setHeader("content-type", "application/json; charset=utf-8");
-        if (ruta === "/api/casos" && req.method === "GET") {
-          res.end(JSON.stringify(catalogo()));
+        if (ruta === "/api/casos" && (req.method === "GET" || req.method === "HEAD")) {
+          // Como en Pages: HEAD responde 200 con las mismas cabeceras y sin cuerpo.
+          res.setHeader("cache-control", "public, max-age=300");
+          res.end(req.method === "HEAD" ? undefined : JSON.stringify(catalogo()));
           return;
         }
         const rutasPost: Record<string, typeof corregirPeticion | typeof recorregirLote> = { "/api/corregir": corregirPeticion, "/api/recorregir": recorregirLote };

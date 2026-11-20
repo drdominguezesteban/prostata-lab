@@ -264,20 +264,33 @@ export function grupoVacio(): Grupo {
   return { version: 1, alumnos: {} };
 }
 
+/** Nombre que el panel da a un archivo sin seudónimo. Un alumno no puede elegirlo: tiene tres palabras. */
+const SIN_SEUDONIMO = /^Sin seudónimo \d+$/;
+
 export function anadirAlGrupo(g: Grupo, e: Exportacion, ahora = new Date()): { grupo: Grupo; seudonimo: string } {
   let seudonimo = e.seudonimo;
-  if (!seudonimo) {
+  const ids = new Set(e.intentos.map((i) => i.id));
+  const comparte = (s: string) => g.alumnos[s]!.intentos.some((i) => ids.has(i.id));
+  let absorbidos: string[] = [];
+  if (seudonimo) {
+    // B9 en el otro orden: si antes se importó sin seudónimo un archivo con estos mismos intentos, era este alumno.
+    absorbidos = Object.keys(g.alumnos).filter((s) => s !== seudonimo && SIN_SEUDONIMO.test(s) && comparte(s));
+  } else {
     // Sin seudónimo: si el archivo comparte intentos con un alumno ya importado, es el mismo archivo.
-    const ids = new Set(e.intentos.map((i) => i.id));
-    const mismo = Object.keys(g.alumnos).find((s) => g.alumnos[s]!.intentos.some((i) => ids.has(i.id)));
+    const mismo = Object.keys(g.alumnos).find(comparte);
     if (mismo) seudonimo = mismo;
     else for (let n = Object.keys(g.alumnos).length + 1; !seudonimo || Object.hasOwn(g.alumnos, seudonimo); n++) seudonimo = `Sin seudónimo ${n}`;
   }
-  const previo = Object.hasOwn(g.alumnos, seudonimo) ? g.alumnos[seudonimo]!.intentos : [];
+  let previo = Object.hasOwn(g.alumnos, seudonimo) ? g.alumnos[seudonimo]!.intentos : [];
+  const alumnos = { ...g.alumnos };
+  for (const s of absorbidos) {
+    previo = fusionarIntentos(previo, alumnos[s]!.intentos);
+    delete alumnos[s];
+  }
   return {
     grupo: {
       ...g,
-      alumnos: { ...g.alumnos, [seudonimo]: { importado: ahora.toISOString(), intentos: fusionarIntentos(previo, e.intentos) } },
+      alumnos: { ...alumnos, [seudonimo]: { importado: ahora.toISOString(), intentos: fusionarIntentos(previo, e.intentos) } },
     },
     seudonimo,
   };
@@ -326,7 +339,9 @@ export function aplicarNotas(
   intentos.forEach((i, k) => {
     const n = notas[k];
     if (!n) return;
-    if (n.nota !== i.nota || n.critico !== i.critico || n.perfecto !== i.perfecto) cambiadas++;
+    // Solo la nota y el error crítico delatan un archivo editado. La etiqueta «perfecto» se recalcula
+    // sin avisar: puede cambiar porque cambie el criterio (p. ej. al exigir la densidad de PSA).
+    if (n.nota !== i.nota || n.critico !== i.critico) cambiadas++;
     r.push({ ...i, nota: n.nota, critico: n.critico, perfecto: n.perfecto, componentes: n.componentes });
   });
   return { intentos: r, cambiadas, descartados: intentos.length - r.length };
