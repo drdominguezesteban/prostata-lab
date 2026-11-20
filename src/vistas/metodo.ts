@@ -26,7 +26,7 @@ export function vistaMetodo(el: HTMLElement): void {
       h("li", null, "Solo cuentan como lesiones tuyas las de PI-RADS ≥3. Puedes anotar una lesión de categoría 1–2 sin que te reste."),
       h("li", null, "En un estudio sin lesiones, localización y secuencias no aplican y el resto de componentes se reescala a 100."),
       h("li", null, `Error crítico (una decisión opuesta a la indicada, p. ej. no biopsiar un PI-RADS 4): la decisión vale 0 y se restan ${PENALIZACION_ERROR_CRITICO} puntos al total. El resto de componentes sigue contando, para que veas en qué acertaste.`),
-      h("li", null, `Caso perfecto: ${UMBRAL_PERFECTO} puntos o más, sin error crítico y con la localización al ${pct(LOCALIZACION_PERFECTO)} o más.`),
+      h("li", null, `Caso perfecto: ${UMBRAL_PERFECTO} puntos o más, sin error crítico y con cada lesión localizada al ${pct(LOCALIZACION_PERFECTO)} o más.`),
       h("li", null, "Error de regla: si tu categoría no sigue PI-RADS v2.1 con tus propias puntuaciones de T2 y DWI, la corrección te lo señala aparte del error de lectura.")),
 
     h("h2", null, "De dónde salen los casos"),

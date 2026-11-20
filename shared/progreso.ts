@@ -273,7 +273,7 @@ export function aplicarNotas(
   intentos.forEach((i, k) => {
     const n = notas[k];
     if (!n) return;
-    if (n.nota !== i.nota || n.critico !== i.critico) cambiadas++;
+    if (n.nota !== i.nota || n.critico !== i.critico || n.perfecto !== i.perfecto) cambiadas++;
     r.push({ ...i, nota: n.nota, critico: n.critico, perfecto: n.perfecto, componentes: n.componentes });
   });
   return { intentos: r, cambiadas, descartados: intentos.length - r.length };

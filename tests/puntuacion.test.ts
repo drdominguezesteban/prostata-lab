@@ -211,3 +211,15 @@ test("caso perfecto: hace falta delimitar bien la lesión, no solo sumar 90", ()
   const casi = corregir(d, { ...lecturaPerfecta(d), lesiones: [{ ...lecturaPerfecta(d).lesiones[0]!, sectores: ["apex_PZ_pl_D", "mid_PZ_pl_D"] }] });
   assert.equal(casi.perfecto, true);
 });
+
+test("caso perfecto: el umbral de localización se aplica a cada lesión, no a la media", () => {
+  const c = caso("11260_1001283"); // L1: mid_PZ_pl_D, mid_PZ_a_D, base_PZ_pl_D · L2: apex_PZ_pm_I, mid_PZ_pm_I
+  const base = lecturaPerfecta(c);
+  const conL1 = (sectores: string[]) =>
+    corregir(c, { ...base, lesiones: base.lesiones.map((l) => (l.sectores.includes("mid_PZ_pl_D") ? { ...l, sectores } : l)) });
+  const pobre = conL1(["mid_PZ_pl_D"]); // Dice 0,5 en L1; media 0,75
+  assert.ok(pobre.nota >= 90, `nota ${pobre.nota}`);
+  assert.equal(pobre.perfecto, false);
+  assert.equal(conL1(["mid_PZ_pl_D", "mid_PZ_a_D"]).perfecto, true);
+  assert.equal(corregir(c, base).perfecto, true);
+});

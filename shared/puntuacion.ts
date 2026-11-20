@@ -49,7 +49,7 @@ export const PRECISION_DETECCION = 0.5;
 export const TOLERANCIA_PSAD = 0.015;
 /** Nota mínima, sin error crítico, para contar como caso perfecto. */
 export const UMBRAL_PERFECTO = 90;
-/** Localización mínima para un caso perfecto: con menos, la lesión está encontrada pero mal delimitada. */
+/** Localización mínima de cada lesión para un caso perfecto: con menos, está encontrada pero mal delimitada. */
 export const LOCALIZACION_PERFECTO = 2 / 3;
 
 export type TipoPareja = "coincide" | "adyacente" | "falso_positivo" | "omitida";
@@ -210,9 +210,13 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
       return p ? f(p) : 0;
     }));
 
-  const localizacion = hayReferencia
-    ? porReferencia((p) => (p.tipo === "coincide" ? p.solape : CREDITO_ADYACENTE))
-    : null;
+  const locPareja = (p: Pareja) => (p.tipo === "coincide" ? p.solape : CREDITO_ADYACENTE);
+  const localizacion = hayReferencia ? porReferencia(locPareja) : null;
+  // Perfecto exige delimitar bien cada lesión de referencia, no solo la media.
+  const bienDelimitadas = referencia.every((r) => {
+    const p = emparejadas.find((x) => x.referencia === r);
+    return !!p && locPareja(p) >= LOCALIZACION_PERFECTO - 1e-9;
+  });
 
   const secuencias = hayReferencia
     ? porReferencia((p) => {
@@ -268,7 +272,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     nota,
     notaSinPenalizacion,
     critico,
-    perfecto: nota >= UMBRAL_PERFECTO && !critico && (localizacion === null || localizacion >= LOCALIZACION_PERFECTO - 1e-9),
+    perfecto: nota >= UMBRAL_PERFECTO && !critico && bienDelimitadas,
     componentes,
     parejas,
     comentarios,
