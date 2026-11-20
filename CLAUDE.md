@@ -1,7 +1,8 @@
 # prostata-lab
 
 Próstata Lab: lectura guiada de RM biparamétrica de próstata (PI-RADS v2.1) con 7 estudios reales de
-PI-CAI. Proyecto personal de Mario, en `*.pages.dev`. Sustituye a la versión de ChatGPT Sites.
+PI-CAI. Proyecto personal de Mario, en https://prostatalab.drdominguezesteban.com
+(alternativa: https://prostata-lab.pages.dev). Sustituye a la versión de ChatGPT Sites.
 
 ## Arquitectura
 
