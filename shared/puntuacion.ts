@@ -49,6 +49,8 @@ export const PRECISION_DETECCION = 0.5;
 export const TOLERANCIA_PSAD = 0.015;
 /** Nota mínima, sin error crítico, para contar como caso perfecto. */
 export const UMBRAL_PERFECTO = 90;
+/** Localización mínima para un caso perfecto: con menos, la lesión está encontrada pero mal delimitada. */
+export const LOCALIZACION_PERFECTO = 2 / 3;
 
 export type TipoPareja = "coincide" | "adyacente" | "falso_positivo" | "omitida";
 
@@ -266,7 +268,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     nota,
     notaSinPenalizacion,
     critico,
-    perfecto: nota >= UMBRAL_PERFECTO && !critico,
+    perfecto: nota >= UMBRAL_PERFECTO && !critico && (localizacion === null || localizacion >= LOCALIZACION_PERFECTO - 1e-9),
     componentes,
     parejas,
     comentarios,

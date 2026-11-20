@@ -197,3 +197,17 @@ test("el lote del panel docente solo devuelve notas y rechaza lecturas incomplet
   assert.equal(JSON.stringify(r.json).includes("informe"), false);
   assert.equal(recorregirLote({ intentos: new Array(301).fill({}) }).estado, 413);
 });
+
+test("caso perfecto: hace falta delimitar bien la lesión, no solo sumar 90", () => {
+  const c = caso("10807_1000823"); // referencia: mid_PZ_pl_D, mid_PZ_pm_D, base_PZ_pl_D
+  const r = (sectores: string[]) =>
+    corregir(c, { ...lecturaPerfecta(c), lesiones: [{ ...lecturaPerfecta(c).lesiones[0]!, sectores }] });
+  const uno = r(["mid_PZ_pl_D"]);
+  assert.ok(uno.nota >= 90, `nota ${uno.nota}`);
+  assert.equal(uno.perfecto, false);
+  assert.equal(r(["mid_PZ_pl_D", "mid_PZ_pm_D"]).perfecto, true, "2 de 3: Dice 0,8");
+  assert.equal(r(["mid_PZ_pl_D", "mid_PZ_pm_D", "base_PZ_pl_D"]).perfecto, true);
+  const d = caso("11137_1001160"); // una lesión de un sector: exacto + contiguo, Dice 2/3
+  const casi = corregir(d, { ...lecturaPerfecta(d), lesiones: [{ ...lecturaPerfecta(d).lesiones[0]!, sectores: ["apex_PZ_pl_D", "mid_PZ_pl_D"] }] });
+  assert.equal(casi.perfecto, true);
+});
