@@ -64,6 +64,9 @@ main:focus { outline: none; }
 .aviso.error, .error-campo { color: var(--rojo); }
 .error-campo { font-size: 0.875rem; margin: 0.25rem 0 0; font-weight: 600; }
 .error-campo:empty { display: none; }
+.resumen-faltas { margin: 1rem 0 0.5rem; border-color: var(--rojo); border-width: 2px; }
+.resumen-faltas .enlace { font-size: inherit; text-align: left; }
+#usar-sugerida { margin-top: 0.4rem; }
 .cita { border-left: 3px solid var(--linea); padding-left: 0.8rem; white-space: pre-wrap; }
 .muestra { display: inline-block; width: 0.9em; height: 0.9em; border-radius: 3px; vertical-align: -0.1em; }
 

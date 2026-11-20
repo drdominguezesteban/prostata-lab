@@ -5,6 +5,7 @@
  */
 import casosJson from "../datos/casos.json";
 import geometriaJson from "../datos/geometria.json";
+import { faltantesLectura } from "./faltantes";
 import { MAX_LOTE } from "./limites";
 import { corregir, type Componente, type Resultado } from "./puntuacion";
 import { esSector, legibilizar } from "./sectores";
@@ -135,18 +136,21 @@ export function casoPorId(id: string): Caso | undefined {
 /**
  * La referencia solo se entrega tras una lectura completa, igual que exige el formulario:
  * densidad de PSA, cada lesión con sector y categoría, categoría del estudio y decisión.
+ * Los criterios están en `shared/faltantes.ts`, que usa también el navegador; aquí solo se
+ * forma el mensaje de la primera falta.
  */
 export function faltaEnLectura(l: Lectura, caso?: Caso): string | null {
-  if (l.psad === null || l.psad <= 0 || l.psad > 5) return "Falta la densidad de PSA.";
-  for (const x of l.lesiones) {
-    if (!x.sectores.length || x.pirads === null) return `Falta el sector o la categoría de ${x.id}.`;
+  const f = faltantesLectura(l, caso?.decision.opciones)[0];
+  if (!f) return null;
+  switch (f.campo) {
+    case "psad": return "Falta la densidad de PSA.";
+    case "sectores":
+    case "pirads": return `Falta el sector o la categoría de ${f.lesion}.`;
+    case "categoria": return "Falta la categoría PI-RADS del estudio.";
+    case "decision": return "Falta la decisión clínica.";
+    case "opcion": return "Esa decisión no es una de las opciones del caso.";
   }
-  if (l.categoria === null) return "Falta la categoría PI-RADS del estudio.";
-  if (l.decision === null) return "Falta la decisión clínica.";
-  if (caso && !caso.decision.opciones.some((o) => o.id === l.decision)) return "Esa decisión no es una de las opciones del caso.";
-  return null;
 }
-
 
 export interface NotaRecalculada {
   nota: number;

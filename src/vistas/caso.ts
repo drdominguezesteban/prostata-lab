@@ -4,6 +4,7 @@ import { almacen, type Borrador } from "../almacen";
 import { Visor, type MarcaVisor } from "../visor";
 import { mapaSectores } from "../mapa";
 import { informeAlumno } from "../informe";
+import { faltantesLectura, nombreFalta, type Falta } from "../../shared/faltantes";
 import { intentoDesde } from "../../shared/progreso";
 import { NOMBRE_ZONA_LARGA, zonaPrincipal } from "../../shared/sectores";
 import { lecturaVacia, type LesionAlumno } from "../../shared/tipos";
@@ -35,6 +36,8 @@ class LecturaCaso {
   private panel = h("div", { class: "panel-paso" });
   private pasos = h("ol", { class: "pasos" });
   private marcando: string | null = null;
+  /** Tras un «Enviar» con la lectura incompleta: se muestran el resumen y los mensajes de cada campo. */
+  private avisarFaltas = false;
   private reloj: number;
 
   constructor(el: HTMLElement, private caso: CasoPublico) {
@@ -92,6 +95,7 @@ class LecturaCaso {
     if (this.b.paso === 0) this.pasoContexto();
     else if (this.b.paso === 1) this.pasoLesiones();
     else this.pasoConclusion();
+    this.pintarErrores();
   }
 
   private pintarMarcas(): void {
@@ -136,7 +140,7 @@ class LecturaCaso {
     const psad = h("input", {
       id: "psad", type: "text", inputmode: "decimal", autocomplete: "off", value: this.lectura.psad === null ? "" : num(this.lectura.psad),
       "aria-describedby": "psad-ayuda psad-error",
-      oninput: () => { this.lectura.psad = leerNum(psad.value); this.guardar(); },
+      oninput: () => { this.lectura.psad = leerNum(psad.value); this.guardar(); this.pintarErrores(); },
     });
     const impresion = h("textarea", { id: "impresion", rows: 4, oninput: () => { this.lectura.impresion = impresion.value; this.guardar(); } });
     impresion.value = this.lectura.impresion;
@@ -200,7 +204,7 @@ class LecturaCaso {
     const selector = (etiqueta: string, campo: "t2" | "dwi" | "pirads") => {
       const s = h("select", {
         id: `${id}-${campo}`,
-        onchange: () => { l[campo] = s.value ? Number(s.value) : null; this.guardar(); },
+        onchange: () => { l[campo] = s.value ? Number(s.value) : null; this.guardar(); this.pintarErrores(); },
       }, h("option", { value: "" }, "—"), ...[1, 2, 3, 4, 5].map((n) => h("option", { value: n, selected: l[campo] === n }, String(n))));
       return h("div", { class: "campo compacto" }, h("label", { for: `${id}-${campo}` }, etiqueta), s, h("p", { class: "error-campo", id: `${id}-${campo}-error` }));
     };
@@ -233,7 +237,7 @@ class LecturaCaso {
         } }, "Quitar")),
       h("div", { class: "campo" },
         h("span", { class: "etiqueta" }, "Sectores"),
-        mapaSectores({ seleccion: l.sectores, casillas: true, etiqueta: `Sectores de ${id}`, alCambiar: (s) => { l.sectores = s; this.guardar(); pintarZona(); } }),
+        mapaSectores({ seleccion: l.sectores, casillas: true, etiqueta: `Sectores de ${id}`, alCambiar: (s) => { l.sectores = s; this.guardar(); pintarZona(); this.pintarErrores(); } }),
         h("p", { class: "error-campo", id: `${id}-sectores-error` })),
       zonaTexto,
       h("div", { class: "fila-campos" },
@@ -250,11 +254,18 @@ class LecturaCaso {
   private pasoConclusion(): void {
     const sugerida = Math.max(0, ...this.lectura.lesiones.map((l) => l.pirads ?? 0));
     const categoria = h("select", { id: "categoria", "aria-describedby": "categoria-ayuda categoria-error", onchange: () => {
-      this.lectura.categoria = categoria.value ? Number(categoria.value) : null; this.guardar(); pintarInforme();
+      this.lectura.categoria = categoria.value ? Number(categoria.value) : null; this.guardar(); pintarInforme(); this.pintarErrores();
     } }, h("option", { value: "" }, "—"), ...[1, 2, 3, 4, 5].map((n) => h("option", { value: n, selected: this.lectura.categoria === n }, `PI-RADS ${n}`)));
     const informe = h("pre", { class: "informe" });
     const pintarInforme = () => (informe.textContent = informeAlumno(this.caso, this.lectura));
     pintarInforme();
+    // Sugerencia sin rellenar sola: el desplegable sigue en «—» hasta que el alumno decide.
+    const usar = sugerida
+      ? h("button", { type: "button", class: "boton secundario pequeno", id: "usar-sugerida", onclick: () => {
+          categoria.value = String(sugerida);
+          this.lectura.categoria = sugerida; this.guardar(); pintarInforme(); this.pintarErrores();
+        } }, `Usar PI-RADS ${sugerida}`)
+      : null;
     const enviar = h("button", { type: "button", class: "boton", onclick: () => void this.enviar(enviar) }, "Enviar y ver la corrección");
     vaciar(
       this.panel,
@@ -263,40 +274,62 @@ class LecturaCaso {
         h("label", { for: "categoria" }, "Categoría PI-RADS del estudio"),
         categoria,
         h("p", { class: "ayuda", id: "categoria-ayuda" }, sugerida ? `La de tu lesión índice es ${sugerida}.` : "Sin lesiones sospechosas, el estudio es PI-RADS 1 o 2."),
+        usar,
         h("p", { class: "error-campo", id: "categoria-error" })),
       h("fieldset", { class: "radios bloque", id: "decision", "aria-describedby": "decision-error" },
         h("legend", null, "Decisión clínica"),
         ...this.caso.opciones.map((o) => h("label", null,
-          h("input", { type: "radio", name: "decision", value: o.id, checked: this.lectura.decision === o.id, onchange: () => { this.lectura.decision = o.id; this.guardar(); } }), " ", o.texto)),
+          h("input", { type: "radio", name: "decision", value: o.id, checked: this.lectura.decision === o.id, onchange: () => { this.lectura.decision = o.id; this.guardar(); this.pintarErrores(); } }), " ", o.texto)),
         h("p", { class: "error-campo", id: "decision-error" })),
       h("h3", null, "Tu informe (borrador)"),
       informe,
+      h("div", { class: "aviso error resumen-faltas", id: "faltas", role: "alert", tabindex: -1, hidden: true }),
       h("p", { class: "error-campo", id: "envio-error", role: "alert" }),
       h("div", { class: "acciones" }, enviar),
     );
   }
 
-  private validar(): { paso: number; campo: string; mensaje: string } | null {
-    const l = this.lectura;
-    if (l.psad === null || l.psad <= 0 || l.psad > 5) return { paso: 0, campo: "psad", mensaje: "Escribe la densidad de PSA (por ejemplo, 0,15)." };
-    for (const x of l.lesiones) {
-      if (!x.sectores.length) return { paso: 1, campo: `${x.id}-sectores`, mensaje: `Elige al menos un sector para ${x.id}, o quita la lesión.` };
-      if (x.pirads === null) return { paso: 1, campo: `${x.id}-pirads`, mensaje: `Pon la categoría PI-RADS de ${x.id}.` };
+  private faltas(): Falta[] {
+    return faltantesLectura(this.lectura, this.caso.opciones);
+  }
+
+  /** Tras un envío incompleto, pinta el resumen y el mensaje junto a cada campo del paso visible. */
+  private pintarErrores(): void {
+    if (!this.avisarFaltas) return;
+    const faltas = this.faltas();
+    for (const p of this.panel.querySelectorAll<HTMLElement>(".error-campo")) if (p.id !== "envio-error") p.textContent = "";
+    for (const f of faltas) {
+      const msg = document.getElementById(`${idCampo(f)}-error`);
+      if (msg) msg.textContent = mensajeCampo(f);
     }
-    if (l.categoria === null) return { paso: 2, campo: "categoria", mensaje: "Elige la categoría PI-RADS del estudio." };
-    if (l.decision === null) return { paso: 2, campo: "decision", mensaje: "Elige una decisión clínica." };
-    return null;
+    const resumen = document.getElementById("faltas");
+    if (!resumen) return;
+    resumen.hidden = !faltas.length;
+    vaciar(resumen, ...(faltas.length ? [
+      h("strong", null, "Para corregir falta: "),
+      ...faltas.flatMap((f, i) => [
+        ...(i ? [" · "] : []),
+        h("button", { type: "button", class: "enlace", onclick: () => this.irAlCampo(f) }, nombreFalta(f)),
+      ]),
+    ] : []));
+  }
+
+  /** Lleva al paso de la falta y pone el foco en su campo. */
+  private irAlCampo(f: Falta): void {
+    if (f.paso !== this.b.paso) this.irA(f.paso);
+    const control = controlCampo(f);
+    control?.focus();
+    control?.scrollIntoView({ block: "center" });
   }
 
   private async enviar(boton: HTMLButtonElement): Promise<void> {
-    const fallo = this.validar();
-    if (fallo) {
-      if (fallo.paso !== this.b.paso) this.irA(fallo.paso);
-      const msg = document.getElementById(`${fallo.campo}-error`);
-      if (msg) msg.textContent = fallo.mensaje;
-      const control = document.getElementById(fallo.campo) ?? document.querySelector<HTMLElement>(`#lesion-${fallo.campo.split("-")[0]} .sector`);
-      control?.focus();
-      control?.scrollIntoView({ block: "center" });
+    const faltas = this.faltas();
+    if (faltas.length) {
+      this.avisarFaltas = true;
+      this.pintarErrores();
+      const resumen = document.getElementById("faltas");
+      resumen?.focus();
+      resumen?.scrollIntoView({ block: "center" });
       return;
     }
     boton.disabled = true;
@@ -316,6 +349,28 @@ class LecturaCaso {
       const msg = document.getElementById("envio-error");
       if (msg) msg.textContent = e instanceof Error && e.message ? e.message : "No se ha podido corregir. Inténtalo de nuevo.";
     }
+  }
+}
+
+function idCampo(f: Falta): string {
+  return f.lesion ? `${f.lesion}-${f.campo}` : f.campo === "opcion" ? "decision" : f.campo;
+}
+
+function controlCampo(f: Falta): HTMLElement | null {
+  if (f.campo === "sectores") return document.querySelector<HTMLElement>(`#lesion-${CSS.escape(f.lesion ?? "")} .sector`);
+  if (f.campo === "decision" || f.campo === "opcion") return document.querySelector<HTMLElement>("#decision input");
+  return document.getElementById(idCampo(f));
+}
+
+/** El mensaje junto a cada campo, el mismo que había antes del resumen. */
+function mensajeCampo(f: Falta): string {
+  switch (f.campo) {
+    case "psad": return "Escribe la densidad de PSA (por ejemplo, 0,15).";
+    case "sectores": return `Elige al menos un sector para ${f.lesion}, o quita la lesión.`;
+    case "pirads": return `Pon la categoría PI-RADS de ${f.lesion}.`;
+    case "categoria": return "Elige la categoría PI-RADS del estudio.";
+    case "decision":
+    case "opcion": return "Elige una decisión clínica.";
   }
 }
 
