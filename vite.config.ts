@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
-import { catalogo, corregirPeticion } from "./shared/servidor";
+import { catalogo, corregirPeticion, recorregirLote } from "./shared/servidor";
 
 /** En `vite` no hay funciones de Pages: el mismo código responde desde el servidor de desarrollo. */
 function apiLocal(): Plugin {
@@ -13,17 +13,18 @@ function apiLocal(): Plugin {
           res.end(JSON.stringify(catalogo()));
           return;
         }
-        if (ruta === "/api/corregir" && req.method === "POST") {
+        const manejador = req.method === "POST" ? { "/api/corregir": corregirPeticion, "/api/recorregir": recorregirLote }[ruta] : undefined;
+        if (manejador) {
           let cuerpo = "";
           req.on("data", (d: Buffer) => (cuerpo += d.toString("utf-8")));
           req.on("end", () => {
             try {
-              const r = corregirPeticion(JSON.parse(cuerpo));
+              const r = manejador(JSON.parse(cuerpo));
               res.statusCode = r.estado;
               res.end(JSON.stringify(r.json));
             } catch {
               res.statusCode = 400;
-              res.end(JSON.stringify({ ok: false, mensaje: "La lectura no es JSON." }));
+              res.end(JSON.stringify({ ok: false, mensaje: "La petición no es JSON." }));
             }
           });
           return;

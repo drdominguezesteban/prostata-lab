@@ -38,6 +38,8 @@ export const PENALIZACION_ERROR_CRITICO = 10;
 export const PENALIZACION_FALSO_POSITIVO = 0.25;
 /** Crédito de localización cuando la lesión está en un sector contiguo, sin compartir ninguno. */
 export const CREDITO_ADYACENTE = 0.4;
+/** Una lesión marcada solo en un sector contiguo cuenta como media detección: está cerca, pero no encima. */
+export const CREDITO_DETECCION_ADYACENTE = 0.5;
 /** Margen para la densidad de PSA (redondeo a dos decimales). */
 export const TOLERANCIA_PSAD = 0.015;
 /** Nota mínima, sin error crítico, para contar como caso perfecto. */
@@ -96,8 +98,8 @@ function puntuacionPareja(a: LesionAlumno, r: LesionReferencia): { tipo: TipoPar
   const ref = new Set(r.sectores);
   const comunes = a.sectores.filter((s) => ref.has(s)).length;
   if (comunes > 0) {
-    const union = new Set([...a.sectores, ...r.sectores]).size;
-    const solape = comunes / union;
+    // Dice: marcar de más o de menos baja el solape; marcar media glándula no puntúa como acertar.
+    const solape = (2 * comunes) / (a.sectores.length + r.sectores.length);
     return { tipo: "coincide", solape, orden: 1 + solape };
   }
   const contiguo = a.sectores.some((s) => r.sectores.some((t) => sonAdyacentes(s, t)));
@@ -190,7 +192,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
   const hayReferencia = referencia.length > 0;
 
   const deteccion = hayReferencia
-    ? acotar((emparejadas.length - PENALIZACION_FALSO_POSITIVO * fp) / referencia.length)
+    ? acotar((emparejadas.reduce((s, p) => s + (p.tipo === "coincide" ? 1 : CREDITO_DETECCION_ADYACENTE), 0) - PENALIZACION_FALSO_POSITIVO * fp) / referencia.length)
     : acotar(1 - 0.5 * fp);
 
   const porReferencia = (f: (p: Pareja) => number) =>
@@ -200,7 +202,7 @@ export function corregir(caso: Caso, lectura: Lectura): Resultado {
     }));
 
   const localizacion = hayReferencia
-    ? porReferencia((p) => (p.tipo === "coincide" ? 0.5 + 0.5 * p.solape : CREDITO_ADYACENTE))
+    ? porReferencia((p) => (p.tipo === "coincide" ? Math.max(CREDITO_ADYACENTE, p.solape) : CREDITO_ADYACENTE))
     : null;
 
   const secuencias = hayReferencia

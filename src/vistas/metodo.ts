@@ -1,5 +1,5 @@
 import { h, vaciar } from "../dom";
-import { CREDITO_ADYACENTE, ETIQUETAS, PENALIZACION_ERROR_CRITICO, PENALIZACION_FALSO_POSITIVO, PESOS, UMBRAL_PERFECTO, type Componente } from "../../shared/puntuacion";
+import { CREDITO_ADYACENTE, CREDITO_DETECCION_ADYACENTE, ETIQUETAS, PENALIZACION_ERROR_CRITICO, PENALIZACION_FALSO_POSITIVO, PESOS, UMBRAL_PERFECTO, type Componente } from "../../shared/puntuacion";
 
 export function vistaMetodo(el: HTMLElement): void {
   const pct = (v: number) => `${Math.round(v * 100)} %`;
@@ -15,8 +15,8 @@ export function vistaMetodo(el: HTMLElement): void {
       h("thead", null, h("tr", null, h("th", { scope: "col" }, "Componente"), h("th", { scope: "col" }, "Peso"), h("th", { scope: "col" }, "Cómo se puntúa"))),
       h("tbody", null,
         ...([
-          ["deteccion", `Lesiones de referencia encontradas. Cada lesión marcada sin correspondencia resta ${pct(PENALIZACION_FALSO_POSITIVO)} de una lesión. En un estudio negativo, cada falso positivo resta la mitad.`],
-          ["localizacion", `Solape de sectores con la lesión de referencia (50–100 %). Si la lesión está en un sector contiguo sin compartir ninguno, ${pct(CREDITO_ADYACENTE)}.`],
+          ["deteccion", `Lesiones de referencia encontradas. Una lesión marcada solo en un sector contiguo cuenta como el ${pct(CREDITO_DETECCION_ADYACENTE)} de una lesión. Cada lesión marcada sin correspondencia resta ${pct(PENALIZACION_FALSO_POSITIVO)} de una lesión. En un estudio negativo, cada falso positivo resta la mitad.`],
+          ["localizacion", `Solape de sectores con la lesión de referencia (coeficiente de Dice): marcar sectores de más o de menos lo reduce. Nunca baja de ${pct(CREDITO_ADYACENTE)} si comparte algún sector, y vale ${pct(CREDITO_ADYACENTE)} si la lesión está en un sector contiguo sin compartir ninguno.`],
           ["secuencias", "T2, DWI y tamaño de cada lesión encontrada. Acertar vale 1; equivocarse en un punto, 0,5."],
           ["pirads", "Categoría del estudio. Exacta, 1; a un punto, 0,5. Se puntúa aunque la lesión no se haya emparejado."],
           ["psad", "Densidad de PSA con dos decimales (se tolera el redondeo)."],

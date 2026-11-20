@@ -39,3 +39,12 @@ test("los datos de casos públicos no contienen la clave de respuestas", () => {
 test("la web avisa de que no es apoyo a decisiones clínicas", () => {
   assert.match(readFileSync(join(RAIZ, "src", "main.ts"), "utf8"), /No es un sistema de apoyo a decisiones clínicas/);
 });
+
+test("el navegador nunca importa valores de shared/servidor ni de datos/ (solo tipos)", () => {
+  for (const f of archivos(join(RAIZ, "src"))) {
+    for (const linea of readFileSync(f, "utf-8").split("\n")) {
+      if (!/^import\s/.test(linea) || /^import type\s/.test(linea)) continue;
+      assert.equal(/shared\/servidor|datos\//.test(linea), false, `${f}: ${linea}`);
+    }
+  }
+});

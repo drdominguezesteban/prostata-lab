@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import casosJson from "../datos/casos.json";
 import { corregir, emparejar, piradsPorRegla, PENALIZACION_ERROR_CRITICO, calcularPsad } from "../shared/puntuacion";
-import { limpiarLectura } from "../shared/servidor";
+import { corregirPeticion, limpiarLectura, recorregirLote } from "../shared/servidor";
 import type { Caso, LesionAlumno, Lectura } from "../shared/tipos";
 
 const casos = casosJson as Caso[];
@@ -73,8 +73,18 @@ test("sector contiguo: empareja con crédito parcial, no cuenta como falso posit
   assert.equal(parejas[0]!.tipo, "adyacente");
   const r = corregir(c, { ...lecturaPerfecta(c), lesiones: [lesion("L1", ["mid_PZ_pl_D"], { t2: 3, dwi: 4, tamano: "<1.5", pirads: 4 })] });
   const comp = Object.fromEntries(r.componentes.map((x) => [x.clave, x.valor]));
-  assert.equal(comp.deteccion, 1);
+  assert.equal(comp.deteccion, 0.5, "contiguo: media detección");
   assert.equal(comp.localizacion, 0.4);
+});
+
+test("marcar media glándula no puntúa la localización como un acierto", () => {
+  const c = caso("11137_1001160"); // referencia: apex_PZ_pl_D
+  const loc = (sectores: string[]) =>
+    corregir(c, { ...lecturaPerfecta(c), lesiones: [lesion("L1", sectores, { t2: 3, dwi: 4, tamano: "<1.5", pirads: 4 })] })
+      .componentes.find((x) => x.clave === "localizacion")!.valor;
+  assert.equal(loc(["apex_PZ_pl_D"]), 1);
+  const amplia = loc(["apex_PZ_pl_D", "apex_PZ_pm_D", "apex_PZ_a_D", "mid_PZ_pl_D", "mid_PZ_pm_D", "mid_PZ_a_D"]);
+  assert.ok(amplia !== null && amplia <= 0.4, `amplia: ${amplia}`);
 });
 
 test("dos lesiones: se empareja cada una con la suya aunque el orden cambie", () => {
@@ -150,4 +160,27 @@ test("la tolerancia de densidad de PSA es simétrica en el límite", () => {
 test("el servidor no deja lesiones con id repetido", () => {
   const l = limpiarLectura({ lesiones: [lesion("L1", ["4p"]), lesion("L1", ["5p"]), lesion("L2", [])] })!;
   assert.equal(new Set(l.lesiones.map((x) => x.id)).size, 3);
+});
+
+test("sin lectura completa, el servidor no entrega la referencia", () => {
+  const c = casos[0]!;
+  const vacia = corregirPeticion({ caso: c.id, lectura: { psad: null, lesiones: [], categoria: null, decision: null, impresion: "" } });
+  assert.equal(vacia.estado, 422);
+  assert.equal("referencia" in vacia.json, false);
+  const completa = corregirPeticion({ caso: c.id, lectura: lecturaPerfecta(c) });
+  assert.equal(completa.estado, 200);
+  assert.ok("referencia" in completa.json);
+});
+
+test("el lote del panel docente solo devuelve notas y rechaza lecturas incompletas", () => {
+  const c = casos[0]!;
+  const r = recorregirLote({ intentos: [{ caso: c.id, lectura: lecturaPerfecta(c) }, { caso: c.id, lectura: {} }, { caso: "no-existe", lectura: lecturaPerfecta(c) }] });
+  assert.equal(r.estado, 200);
+  assert.ok(r.json.ok);
+  if (!r.json.ok) return;
+  assert.equal(r.json.notas[0]!.nota, corregir(c, lecturaPerfecta(c)).nota);
+  assert.equal(r.json.notas[1], null);
+  assert.equal(r.json.notas[2], null);
+  assert.equal(JSON.stringify(r.json).includes("informe"), false);
+  assert.equal(recorregirLote({ intentos: new Array(301).fill({}) }).estado, 413);
 });
