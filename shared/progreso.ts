@@ -65,6 +65,37 @@ export function exportar(p: Progreso, ahora = new Date()): string {
 const finito = (n: unknown): n is number => typeof n === "number" && Number.isFinite(n);
 const esObjeto = (o: unknown): o is Record<string, unknown> => !!o && typeof o === "object" && !Array.isArray(o);
 
+const nuloOFinito = (n: unknown) => n === null || finito(n);
+const nuloOTexto = (t: unknown) => t === null || typeof t === "string";
+
+function esLesion(x: unknown): boolean {
+  if (!esObjeto(x)) return false;
+  const m = x.marca;
+  return (
+    typeof x.id === "string" &&
+    Array.isArray(x.sectores) &&
+    x.sectores.every((c) => typeof c === "string") &&
+    nuloOFinito(x.t2) &&
+    nuloOFinito(x.dwi) &&
+    nuloOFinito(x.pirads) &&
+    nuloOTexto(x.tamano) &&
+    nuloOTexto(x.epe) &&
+    (m === null || (esObjeto(m) && finito(m.corte) && finito(m.x) && finito(m.y)))
+  );
+}
+
+function esLectura(x: unknown): boolean {
+  return (
+    esObjeto(x) &&
+    nuloOFinito(x.psad) &&
+    nuloOFinito(x.categoria) &&
+    nuloOTexto(x.decision) &&
+    typeof x.impresion === "string" &&
+    Array.isArray(x.lesiones) &&
+    x.lesiones.every(esLesion)
+  );
+}
+
 /** Valida a fondo: un intento dañado en un archivo o en el almacén no debe romper ninguna vista. */
 export function esIntento(x: unknown): x is Intento {
   if (!esObjeto(x)) return false;
@@ -77,9 +108,7 @@ export function esIntento(x: unknown): x is Intento {
     finito(i.segundos) &&
     finito(i.nota) &&
     typeof i.critico === "boolean" &&
-    esObjeto(i.lectura) &&
-    Array.isArray(i.lectura.lesiones) &&
-    i.lectura.lesiones.every((l) => esObjeto(l) && Array.isArray(l.sectores)) &&
+    esLectura(i.lectura) &&
     esObjeto(i.componentes) &&
     Object.values(i.componentes).every((v) => v === null || finito(v))
   );
@@ -96,7 +125,8 @@ export function sanearGrupo(x: unknown): Grupo {
   if (!esObjeto(x) || !esObjeto(x.alumnos)) return g;
   for (const [s, a] of Object.entries(x.alumnos)) {
     if (!esObjeto(a) || !Array.isArray(a.intentos)) continue;
-    g.alumnos[s] = { importado: typeof a.importado === "string" ? a.importado : "", intentos: a.intentos.filter(esIntento) };
+    // defineProperty: un seudónimo como «__proto__» se guarda como clave propia.
+    Object.defineProperty(g.alumnos, s, { enumerable: true, writable: true, configurable: true, value: { importado: typeof a.importado === "string" ? a.importado : "", intentos: a.intentos.filter(esIntento) } });
   }
   return g;
 }
@@ -189,8 +219,9 @@ export function grupoVacio(): Grupo {
 }
 
 export function anadirAlGrupo(g: Grupo, e: Exportacion, ahora = new Date()): { grupo: Grupo; seudonimo: string } {
-  const seudonimo = e.seudonimo || `Sin seudónimo ${Object.keys(g.alumnos).length + 1}`;
-  const previo = g.alumnos[seudonimo]?.intentos ?? [];
+  let seudonimo = e.seudonimo;
+  for (let n = Object.keys(g.alumnos).length + 1; !seudonimo || (!e.seudonimo && Object.hasOwn(g.alumnos, seudonimo)); n++) seudonimo = `Sin seudónimo ${n}`;
+  const previo = Object.hasOwn(g.alumnos, seudonimo) ? g.alumnos[seudonimo]!.intentos : [];
   return {
     grupo: {
       ...g,

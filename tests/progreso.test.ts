@@ -96,3 +96,24 @@ test("un intento dañado se rechaza al importar y se descarta al leer del almac�
   assert.deepEqual(Object.keys(g.alumnos), ["Ana"]);
   assert.equal(g.alumnos.Ana!.intentos.length, 1);
 });
+
+test("una lectura con campos de tipo erróneo se rechaza; «__proto__» se guarda como alumno", () => {
+  const bueno = intentoDesde("c1", { psad: 0.1, lesiones: [], categoria: 2, decision: "a", impresion: "" },
+    { nota: 80, critico: false, perfecto: false, componentes: [] } as never, 60);
+  const malos = [
+    { ...bueno, lectura: { lesiones: [] } },
+    { ...bueno, lectura: { ...bueno.lectura, psad: "abc" } },
+    { ...bueno, lectura: { ...bueno.lectura, lesiones: [{ id: "L1", sectores: [], t2: "x" }] } },
+  ];
+  for (const m of malos) assert.equal(leerExportacion(exportar({ ...progresoVacio(), intentos: [m as never] })).ok, false);
+  const g = sanearGrupo(JSON.parse('{"version":1,"alumnos":{"__proto__":{"importado":"","intentos":[]}}}'));
+  assert.deepEqual(Object.keys(g.alumnos), ["__proto__"]);
+});
+
+test("«Sin seudónimo N» no reutiliza un número ya ocupado", () => {
+  let g = grupoVacio();
+  for (let i = 0; i < 2; i++) g = anadirAlGrupo(g, { ...JSON.parse(exportar(progresoVacio())), seudonimo: "" }).grupo;
+  delete g.alumnos["Sin seudónimo 1"];
+  g = anadirAlGrupo(g, { ...JSON.parse(exportar(progresoVacio())), seudonimo: "" }).grupo;
+  assert.equal(Object.keys(g.alumnos).length, 2);
+});
