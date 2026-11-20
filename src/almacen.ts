@@ -1,6 +1,7 @@
 /** Todo lo que se guarda vive en este navegador (localStorage). Nada se envía a ningún servidor. */
-import { grupoVacio, progresoVacio, sanearGrupo, sanearProgreso, type Grupo, type Progreso } from "../shared/progreso";
-import type { Lectura } from "../shared/tipos";
+import { grupoVacio, progresoVacio, sanearBorrador, sanearGrupo, sanearProgreso, type Borrador, type Grupo, type Progreso } from "../shared/progreso";
+
+export type { Borrador };
 
 const CLAVE_PROGRESO = "prostata-lab:progreso:v1";
 const CLAVE_GRUPO = "prostata-lab:docente:v1";
@@ -36,7 +37,8 @@ export const almacen = {
   },
   grupo: (): Grupo => sanearGrupo(leer<unknown>(CLAVE_GRUPO, grupoVacio)),
   guardarGrupo: (g: Grupo) => escribir(CLAVE_GRUPO, g),
-  borrador: (caso: string): Borrador | null => leer<Borrador | null>(CLAVE_BORRADOR + caso, () => null),
+  /** Un borrador dañado o de otro formato se descarta: el caso empieza de cero en vez de quedarse en blanco. */
+  borrador: (caso: string): Borrador | null => sanearBorrador(leer<unknown>(CLAVE_BORRADOR + caso, () => null)),
   guardarBorrador: (caso: string, b: Borrador) => escribir(CLAVE_BORRADOR + caso, b),
   borrarBorrador: (caso: string) => {
     try {
@@ -46,9 +48,3 @@ export const almacen = {
     }
   },
 };
-
-export interface Borrador {
-  lectura: Lectura;
-  paso: number;
-  segundos: number;
-}

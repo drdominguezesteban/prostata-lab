@@ -78,6 +78,11 @@ function numero(v: unknown, min: number, max: number): number | null {
   return typeof v === "number" && Number.isFinite(v) && v >= min && v <= max ? v : null;
 }
 
+/** Puntuaciones PI-RADS, T2 y DWI: solo enteros (2,5 no es una categoría). */
+function entero(v: unknown, min: number, max: number): number | null {
+  return Number.isInteger(v) ? numero(v, min, max) : null;
+}
+
 function texto(v: unknown, max: number): string {
   return typeof v === "string" ? v.slice(0, max) : "";
 }
@@ -106,18 +111,18 @@ export function limpiarLectura(entrada: unknown): Lectura | null {
     limpias.push({
       id,
       sectores,
-      t2: numero(l.t2, 1, 5),
-      dwi: numero(l.dwi, 1, 5),
+      t2: entero(l.t2, 1, 5),
+      dwi: entero(l.dwi, 1, 5),
       tamano: l.tamano === "<1.5" || l.tamano === ">=1.5" ? (l.tamano as Tamano) : null,
       epe: l.epe === "no" || l.epe === "definida" ? (l.epe as Epe) : null,
-      pirads: numero(l.pirads, 1, 5),
+      pirads: entero(l.pirads, 1, 5),
       marca: corte !== null && x !== null && y !== null ? { corte, x, y } : null,
     });
   }
   return {
     psad: numero(e.psad, 0, 10),
     lesiones: limpias,
-    categoria: numero(e.categoria, 1, 5),
+    categoria: entero(e.categoria, 1, 5),
     decision: typeof e.decision === "string" && /^[a-z]$/.test(e.decision) ? e.decision : null,
     impresion: texto(e.impresion, 4000),
   };
@@ -131,13 +136,14 @@ export function casoPorId(id: string): Caso | undefined {
  * La referencia solo se entrega tras una lectura completa, igual que exige el formulario:
  * densidad de PSA, cada lesión con sector y categoría, categoría del estudio y decisión.
  */
-export function faltaEnLectura(l: Lectura): string | null {
+export function faltaEnLectura(l: Lectura, caso?: Caso): string | null {
   if (l.psad === null || l.psad <= 0 || l.psad > 5) return "Falta la densidad de PSA.";
   for (const x of l.lesiones) {
     if (!x.sectores.length || x.pirads === null) return `Falta el sector o la categoría de ${x.id}.`;
   }
   if (l.categoria === null) return "Falta la categoría PI-RADS del estudio.";
   if (l.decision === null) return "Falta la decisión clínica.";
+  if (caso && !caso.decision.opciones.some((o) => o.id === l.decision)) return "Esa decisión no es una de las opciones del caso.";
   return null;
 }
 
@@ -161,7 +167,7 @@ export function recorregirLote(cuerpo: unknown): { estado: number; json: { ok: t
     const e = i as { caso?: unknown; lectura?: unknown } | null;
     const caso = typeof e?.caso === "string" ? casoPorId(e.caso) : undefined;
     const lectura = caso ? limpiarLectura(e?.lectura) : null;
-    if (!caso || !lectura || faltaEnLectura(lectura)) return null;
+    if (!caso || !lectura || faltaEnLectura(lectura, caso)) return null;
     const r = corregir(caso, lectura);
     const componentes: NotaRecalculada["componentes"] = {};
     for (const c of r.componentes) componentes[c.clave] = c.valor;
@@ -176,7 +182,7 @@ export function corregirPeticion(cuerpo: unknown): { estado: number; json: Respu
   if (!caso) return { estado: 404, json: { ok: false, mensaje: "No encuentro ese caso." } };
   const lectura = limpiarLectura(c?.lectura);
   if (!lectura) return { estado: 400, json: { ok: false, mensaje: "La lectura no tiene un formato válido." } };
-  const falta = faltaEnLectura(lectura);
+  const falta = faltaEnLectura(lectura, caso);
   if (falta) return { estado: 422, json: { ok: false, mensaje: falta } };
   const resultado = corregir(caso, lectura);
   return {

@@ -2,7 +2,8 @@ import { botonConfirmar, descargar, fecha, h, vaciar } from "../dom";
 import { almacen } from "../almacen";
 import { casos, recorregir } from "../api";
 import { ETIQUETAS } from "../../shared/puntuacion";
-import { anadirAlGrupo, aplicarNotas, csvGrupo, leerExportacion, resumenPorCaso, resumir, ultimos } from "../../shared/progreso";
+import { csvGrupo, resumenPorCaso, resumir, ultimos } from "../../shared/progreso";
+import { cargarArchivosDocente } from "../archivos";
 import type { CasoPublico } from "../../shared/servidor";
 
 export async function vistaDocente(el: HTMLElement): Promise<void> {
@@ -22,37 +23,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
 
   const entrada = h("input", { type: "file", accept: "application/json,.json", multiple: true, id: "archivos-alumnos", class: "oculto" });
   const cargar = async (archivos: FileList | File[]) => {
-    let grupo = almacen.grupo();
-    const avisos: string[] = [];
-    for (const f of Array.from(archivos)) {
-      const r = leerExportacion(await f.text());
-      if (!r.ok) {
-        avisos.push(`${f.name}: ${r.mensaje}`);
-        continue;
-      }
-      // La nota del archivo no se usa: el alumno podría haberla editado. Se corrige de nuevo en el servidor.
-      let notas;
-      try {
-        notas = await recorregir(r.datos.intentos.map((i) => ({ caso: i.caso, lectura: i.lectura })));
-      } catch {
-        avisos.push(`${f.name}: no se ha podido verificar con el servidor. No se ha importado; inténtalo de nuevo.`);
-        continue;
-      }
-      const v = aplicarNotas(r.datos.intentos, notas);
-      if (!v.intentos.length && r.datos.intentos.length) {
-        avisos.push(`${f.name}: ningún intento es válido. No se ha importado.`);
-        continue;
-      }
-      const res = anadirAlGrupo(grupo, { ...r.datos, intentos: v.intentos });
-      grupo = res.grupo;
-      const extra = [
-        v.cambiadas ? `${v.cambiadas} con la nota recalculada en el servidor, distinta de la del archivo` : "",
-        v.descartados ? `${v.descartados} descartados por no ser válidos` : "",
-      ].filter(Boolean).join("; ");
-      avisos.push(`${f.name}: ${v.intentos.length} intentos de «${res.seudonimo}»${extra ? ` (${extra})` : ""}.`);
-    }
-    almacen.guardarGrupo(grupo);
-    pintar(el, catalogo, avisos);
+    pintar(el, catalogo, await cargarArchivosDocente(Array.from(archivos), recorregir));
   };
   entrada.addEventListener("change", () => entrada.files && void cargar(entrada.files));
   const zona = h("label", { class: "zona-soltar", for: "archivos-alumnos" },
@@ -64,8 +35,7 @@ function pintar(el: HTMLElement, catalogo: CasoPublico[], mensajes: string[]): v
   const quitar = (s: string) => {
     const grupo = almacen.grupo();
     delete grupo.alumnos[s];
-    almacen.guardarGrupo(grupo);
-    pintar(el, catalogo, [`«${s}» quitado del panel.`]);
+    pintar(el, catalogo, [almacen.guardarGrupo(grupo) ? `«${s}» quitado del panel.` : `No se ha podido guardar el cambio en este navegador.`]);
   };
 
   vaciar(

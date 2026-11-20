@@ -224,7 +224,10 @@ input[type="radio"], input[type="checkbox"] { width: 1.15rem; height: 1.15rem; a
 .pareja-adyacente { border-left: 6px solid var(--ambar); }
 .pareja-coincide { border-left: 6px solid var(--verde); }
 .pareja .explicacion { font-size: 0.95rem; }
-.campo-a-campo td:last-child { width: 2.5rem; text-align: center; }
+/* Columnas fijas y palabras largas partidas («posterolateral»): la tabla no desborda a 375 px. */
+.campo-a-campo { table-layout: fixed; }
+.campo-a-campo th, .campo-a-campo td { overflow-wrap: anywhere; hyphens: auto; }
+.campo-a-campo th:last-child, .campo-a-campo td:last-child { width: 2.5rem; text-align: center; }
 .dos-informes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
 
 /* Resultados y docente */

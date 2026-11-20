@@ -9,6 +9,7 @@ import { vistaCorreccion } from "./vistas/correccion";
 import { vistaResultados } from "./vistas/resultados";
 import { vistaDocente } from "./vistas/docente";
 import { vistaMetodo } from "./vistas/metodo";
+import { leerRuta, rutaPropia } from "./ruta";
 
 type Vista = (contenedor: HTMLElement, parametro: string) => void | Promise<void>;
 
@@ -61,10 +62,8 @@ app.append(
 let rutaAnterior = "";
 
 function navegar(): void {
-  const hash = location.hash.replace(/^#\/?/, "");
-  const [nombre = "", ...resto] = hash.split("/");
-  const ruta = RUTAS[nombre] ?? RUTAS[""]!;
-  const parametro = decodeURIComponent(resto.join("/"));
+  const { hash, nombre, parametro } = leerRuta(location.hash);
+  const ruta = rutaPropia(RUTAS, nombre) ?? RUTAS[""]!;
   document.title = `${ruta.titulo} · Próstata Lab`;
   vaciar(
     navegacion,
