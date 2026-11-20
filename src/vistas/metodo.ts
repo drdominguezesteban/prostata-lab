@@ -32,7 +32,7 @@ export function vistaMetodo(el: HTMLElement): void {
     h("h2", null, "De dónde salen los casos"),
     h("ul", null,
       h("li", null, h("strong", null, "Imágenes: "), "PI-CAI Public Training and Development Dataset (Saha A, et al. Artificial intelligence and radiologists in prostate cancer detection on MRI (PI-CAI): an international, paired, non-inferiority, confirmatory study. Lancet Oncol 2024;25:879-887), licencia CC BY-NC 4.0, ",
-        h("a", { href: "https://zenodo.org/records/6624726", rel: "noopener" }, "zenodo.org/records/6624726"), ". Máscaras de cáncer y zonales: picai_labels."),
+        h("a", { href: "https://zenodo.org/records/6624726", rel: "noopener" }, "zenodo.org/records/6624726"), ". Máscaras de cáncer y zonales: picai_labels. Por esa licencia, Próstata Lab es de uso docente y no comercial."),
       h("li", null, h("strong", null, "Preparación: "), "recorte centrado en la glándula, ventana fija y exportación a PNG de 8 bits. El ADC y la imagen de b alto se han remuestreado (en milímetros) a la geometría de T2: el mismo píxel y corte es el mismo punto anatómico en las tres secuencias."),
       h("li", null, h("strong", null, "Datos clínicos: "), "edad, PSA y volumen proceden de PI-CAI. Tacto rectal, antecedentes, biopsias previas y medicación se han completado con fines docentes."),
       h("li", null, h("strong", null, "Lecturas de referencia: "), "del autor, con el contorno de la máscara de PI-CAI y el desenlace histológico como apoyo. Están pendientes de validación por un radiólogo."),

@@ -20,3 +20,4 @@ npm run build
 ## Datos
 
 Imágenes: PI-CAI (Saha et al., Lancet Oncol 2024), licencia CC BY-NC 4.0. Lecturas de referencia del autor.
+Próstata Lab es una herramienta docente gratuita y no comercial, como exige esa licencia.

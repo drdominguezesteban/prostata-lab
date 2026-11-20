@@ -30,6 +30,7 @@ PI-CAI. Proyecto personal de Mario, en `*.pages.dev`. Sustituye a la versión de
 - Nunca se vincula con el HUMV, Valdecilla ni IDIVAL, ni en textos, metadatos, commits o repos. <!-- cumplimiento: permitido -->
 - Solo imágenes públicas de PI-CAI (CC BY-NC 4.0, atribución en el pie y en «Método»). Nunca datos
   de pacientes propios, ni en pruebas.
+- Uso no comercial (lo exige CC BY-NC): sin cobro, publicidad ni acceso de pago.
 - Herramienta docente: no es un sistema de apoyo a decisiones clínicas; no se debilita ese aviso.
 - Los textos clínicos (módulos 1 y 2, explicaciones) los valida Mario antes de publicar.
 - «PhD» no, hasta que Mario defienda la tesis. Todo en español.

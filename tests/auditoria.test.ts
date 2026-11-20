@@ -3,8 +3,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const RAIZ = join(import.meta.dirname, "..");
+const RAIZ = fileURLToPath(new URL("..", import.meta.url));
 const EXT = /\.(ts|html|css|json|txt|svg|md)$/;
 
 function archivos(dir: string): string[] {
