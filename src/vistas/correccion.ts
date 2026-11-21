@@ -72,7 +72,7 @@ export async function vistaCorreccion(el: HTMLElement, id: string): Promise<void
       h("p", { class: "nota" }, `Tiempo de lectura: ${Math.max(1, Math.round(intento.segundos / 60))} min.`)));
 
   const tablaComponentes = h("table", { class: "tabla" },
-    h("thead", null, h("tr", null, h("th", { scope: "col" }, "Componente"), h("th", { scope: "col" }, "Peso"), h("th", { scope: "col" }, "Acierto"), h("th", { scope: "col", class: "oculto-movil" }, ""))),
+    h("thead", null, h("tr", null, h("th", { scope: "col" }, "Componente"), h("th", { scope: "col" }, "Peso"), h("th", { scope: "col" }, "Acierto"), h("th", { scope: "col", class: "oculto-movil" }, h("span", { class: "oculto" }, "Gráfico del acierto")))),
     h("tbody", null,
       ...res.componentes.map((c) => h("tr", { class: c.valor === null ? "no-aplica" : "" },
         h("td", null, c.etiqueta),
@@ -108,7 +108,7 @@ export async function vistaCorreccion(el: HTMLElement, id: string): Promise<void
       h("figure", null, mapaSectores({ soloLectura: true, referencia: ref.lesiones.flatMap((x) => x.sectores), etiqueta: "Sectores de referencia" }), h("figcaption", null, "Referencia del autor"))),
     h("h2", null, "Estudio y decisión"),
     h("table", { class: "tabla campo-a-campo" },
-      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Campo"), h("th", { scope: "col" }, "Tu respuesta"), h("th", { scope: "col" }, "Referencia"), h("th", { scope: "col" }, ""))),
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Campo"), h("th", { scope: "col" }, "Tu respuesta"), h("th", { scope: "col" }, "Referencia"), h("th", { scope: "col" }, h("span", { class: "oculto" }, "Coincidencia")))),
       h("tbody", null,
         fila("Densidad de PSA", l.psad === null ? "—" : num(l.psad, 2), num(ref.psad, 2), res.componentes.find((c) => c.clave === "psad")?.valor === 1),
         fila("Categoría PI-RADS del estudio", l.categoria ? `PI-RADS ${l.categoria}` : "—", `PI-RADS ${ref.categoria}`, l.categoria === ref.categoria),
@@ -178,7 +178,7 @@ function bloquePareja(p: Pareja, visor: Visor): HTMLElement {
     h("h3", null, titulo,
       a?.marca ? h("button", { type: "button", class: "enlace", onclick: () => { visor.centrarEn(a.marca!.corte, a.marca!.x, a.marca!.y); visor.el.scrollIntoView({ block: "nearest", behavior: "smooth" }); } }, ` Ver tu marca (corte ${a.marca.corte + 1})`) : null),
     h("table", { class: "tabla campo-a-campo" },
-      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Campo"), h("th", { scope: "col" }, a ? `Tu ${a.id}` : "Tú"), h("th", { scope: "col" }, r ? `Referencia ${r.id}` : "Referencia"), h("th", { scope: "col" }, ""))),
+      h("thead", null, h("tr", null, h("th", { scope: "col" }, "Campo"), h("th", { scope: "col" }, a ? `Tu ${a.id}` : "Tú"), h("th", { scope: "col" }, r ? `Referencia ${r.id}` : "Referencia"), h("th", { scope: "col" }, h("span", { class: "oculto" }, "Coincidencia")))),
       h("tbody", null, ...filas)),
     r ? h("p", { class: "explicacion" }, r.explicacion) : null);
 }

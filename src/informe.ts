@@ -10,13 +10,14 @@ export function informeAlumno(c: CasoPublico, l: Lectura): string {
     `Indicación: PSA ${num(c.psa)} ng/mL. ${c.contexto_docente.biopsias_previas === "ninguna" ? "Sin biopsias previas." : `Biopsias previas: ${c.contexto_docente.biopsias_previas}.`}`,
     `Volumen prostático: ${num(c.volumen)} mL. Densidad de PSA: ${l.psad === null ? "—" : num(l.psad, 2)} ng/mL/mL.`,
   ];
-  const sospechosas = l.lesiones.filter((x) => x.sectores.length);
+  // Todas las lesiones añadidas, también las que aún no tienen sector (con «—» donde falta).
+  const sospechosas = l.lesiones;
   if (!sospechosas.length) lineas.push("Sin lesiones focales sospechosas.");
   const indice = [...sospechosas].sort((a, b) => (b.pirads ?? 0) - (a.pirads ?? 0))[0];
   sospechosas.forEach((x, i) => {
     const zona = zonaPrincipal(x.sectores);
     lineas.push(
-      `Lesión ${i + 1}${x === indice && sospechosas.length > 1 ? " (índice)" : ""}: ${zona ? NOMBRE_ZONA_LARGA[zona] : "—"}; ${x.sectores.map(nombreSector).join("; ")}. Tamaño ${x.tamano === ">=1.5" ? "≥1,5 cm" : x.tamano === "<1.5" ? "<1,5 cm" : "—"}.`,
+      `Lesión ${i + 1}${x === indice && sospechosas.length > 1 ? " (índice)" : ""}: ${zona ? NOMBRE_ZONA_LARGA[zona] : "—"}; ${x.sectores.length ? x.sectores.map(nombreSector).join("; ") : "—"}. Tamaño ${x.tamano === ">=1.5" ? "≥1,5 cm" : x.tamano === "<1.5" ? "<1,5 cm" : "—"}.`,
       `- T2: ${x.t2 ?? "—"}.`,
       `- DWI: ${x.dwi ?? "—"}.`,
       "- DCE: no disponible.",

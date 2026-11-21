@@ -283,7 +283,7 @@ class LecturaCaso {
         h("p", { class: "error-campo", id: "decision-error" })),
       h("h3", null, "Tu informe (borrador)"),
       informe,
-      h("div", { class: "aviso error resumen-faltas", id: "faltas", role: "alert", tabindex: -1, hidden: true }),
+      h("div", { class: "aviso error resumen-faltas", id: "faltas", tabindex: -1, hidden: true }),
       h("p", { class: "error-campo", id: "envio-error", role: "alert" }),
       h("div", { class: "acciones" }, enviar),
     );
@@ -293,8 +293,12 @@ class LecturaCaso {
     return faltantesLectura(this.lectura, this.caso.opciones);
   }
 
-  /** Tras un envío incompleto, pinta el resumen y el mensaje junto a cada campo del paso visible. */
-  private pintarErrores(): void {
+  /**
+   * Tras un envío incompleto, pinta el resumen y el mensaje junto a cada campo del paso visible.
+   * Solo `anunciar` (al pulsar «Enviar») le da `role="alert"`: al ir rellenando campos el resumen se
+   * actualiza en silencio, sin volver a leerse entero; ya se anuncia el mensaje junto a cada campo.
+   */
+  private pintarErrores(anunciar = false): void {
     if (!this.avisarFaltas) return;
     const faltas = this.faltas();
     for (const p of this.panel.querySelectorAll<HTMLElement>(".error-campo")) if (p.id !== "envio-error") p.textContent = "";
@@ -304,6 +308,8 @@ class LecturaCaso {
     }
     const resumen = document.getElementById("faltas");
     if (!resumen) return;
+    if (anunciar) resumen.setAttribute("role", "alert");
+    else resumen.removeAttribute("role");
     resumen.hidden = !faltas.length;
     vaciar(resumen, ...(faltas.length ? [
       h("strong", null, "Para corregir falta: "),
@@ -326,7 +332,7 @@ class LecturaCaso {
     const faltas = this.faltas();
     if (faltas.length) {
       this.avisarFaltas = true;
-      this.pintarErrores();
+      this.pintarErrores(true);
       const resumen = document.getElementById("faltas");
       resumen?.focus();
       resumen?.scrollIntoView({ block: "center" });
